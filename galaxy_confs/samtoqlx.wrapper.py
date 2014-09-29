@@ -8,6 +8,7 @@ description
 import os
 import subprocess
 import argparse
+import cfg as cfg
 
 ## Define usage options using argparse library
 parser = argparse.ArgumentParser(description = 'Wrapper for samToQlx.pl')
@@ -24,7 +25,7 @@ print dargs
 
 ## tool execution
 
-cmd = '/usr/bin/perl /opt/exp_soft/galaxy-tools/custom_tools/bin/samToQlx.pl '
+cmd = '/usr/bin/perl %s/bin/samToQlx.pl ' % (cfg.customToolsDir, )
 
 ## required inputs
 cmd += ' %s %s %s %s out.qlx ' % (dargs['sam'], dargs['reads'], dargs['quals'], dargs['ref'])
