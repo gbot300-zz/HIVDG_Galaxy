@@ -1,0 +1,1 @@
+../utilities/fastQ_to_fasta_qual.py

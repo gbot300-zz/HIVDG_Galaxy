@@ -1,0 +1,96 @@
+<tool id="macse"  name="Align codon sequences ">
+
+	<description>using MACSE </description>
+
+	<command>
+		python /opt/exp_soft/galaxy-tools/custom_tools/galaxy_confs/macse.wrapper.py
+
+		## req input
+
+		--seq $seq
+
+		## opt input
+
+		--ext_gap_ratio $ext_gap_ratio
+		--fs $fs
+		--gap_ext $gap_ext
+		--gap_opt $gap_opt
+		--stop $stop
+
+	</command>
+	
+	<inputs>
+		<param name="seq" type="data" format="fasta" value="0.95"  label=" -- seq -- Select reads FASTA file"
+			help="input sequence in FASTA format"/>
+
+		<param name="fs" type="integer" value="30" label=" -- fs -- cost of a frameshift within the sequence" />
+
+		<param name="gap_ext" type="integer" value="1" label=" -- gap_ext -- cost of a gap extension" />
+
+		<param name="gap_opt" type="integer" value="7" label=" -- gap_opt -- cost of creating a gap" />
+
+		<param name="stop" type="integer" value="100" label=" -- stop -- cost of a stop codon not at the end of the sequence" />
+
+		<param name="ext_gap_ratio" type="float" value="0.95" label=" -- ext_gap_ratio -- gap penalty multiplier for begin/end of sequence"
+			help="the gap cost is multiplied by this ratio (value between 0 and 1) to define the cost of gaps at the begining/end of sequences."/>
+
+	</inputs>
+
+	<outputs>
+
+		<data format="fasta"      name = "aa_out"        label="${tool.name} on ${on_string}: AA alignment FASTA"
+			from_work_dir= "macse_out_AA.fasta"/>
+
+		<data format="fasta"      name = "nt_out"        label="${tool.name} on ${on_string}: NT alignment FASTA"
+			from_work_dir= "macse_out_NT.fasta"/>
+
+	</outputs>
+
+	<help>
+
+**PLEASE NOTE**
+
+By default, sequences are considered to be reliable coding sequences and the costs for frameshifts and stop codons are high (respectively 30 and 100).
+If you include reads or contigs from NGS, we advise assigning to the corresponding sequences lower costs for frameshifts and stop codons (e.g. respectively 10 and 60, since it is frequent that NGS data contain an extra base or miss one).
+Similarly, if you include pseudogenes we advise assigning to the corresponding sequences lower costs for frameshifts and stop codons (e.g. respectively 20 and 10, since they no longer undergo selective pressure a stop codon can arise from just a recent mutation).
+
+------
+
+**Overview**
+	A wide range of molecular analyses relies on multiple sequence alignments (MSA). Until now the most efficient solution to align nucleotide (NT) sequences containing open reading frames was to use indirect procedures that align amino acid (AA) translation before reporting the inferred gap positions at the codon level. There are two important pitfalls with this approach. Firstly, any premature stop codon impedes using such a strategy. Secondly, each sequence is translated with the same reading frame from beginning to end, so that the presence of a single additional nucleotide leads to both aberrant translation and alignment.
+
+	MACSE aligns coding NT sequences with respect to their AA translation while allowing NT sequences to contain multiple frameshifts and/or stop codons. MACSE is hence the first automatic solution to align protein-coding gene datasets containing non-functional sequences (pseudogenes) without disrupting the underlying codon structure. It has also proved useful in detecting undocumented frameshifts in public database sequences and in aligning next-generation sequencing reads/contigs against a reference coding sequence.
+
+------
+
+**Citation**
+	If you find MACSE useful, please cite:
+	MACSE: Multiple Alignment of Coding SEquences accounting for frameshifts and stop codons.
+	Vincent Ranwez, Sébastien Harispe, Frédéric Delsuc, Emmanuel JP Douzery
+	PLoS One 2011, 6(9): e22594.
+
+------
+	</help>
+
+</tool>
+
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

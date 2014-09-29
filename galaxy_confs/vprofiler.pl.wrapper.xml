@@ -1,0 +1,234 @@
+<tool id="vprofiler" name="V-Profiler">
+
+    <description>variant detection, building on V-Phaser output</description>
+
+    <command>
+	vprofiler.pl.wrapper.py
+
+	## required input
+	--sample_name	$sample_name
+	--iqlx		$input_qlx
+	--icalls	$input_calls
+	--iconsen	$input_consen
+
+	## optional input
+	--nt		$nt
+
+	#if $codon_input.codon == "Yes":
+		--codon		1
+		--igenes        $input_genes
+	#else
+		--codon         0
+	#end if
+	#if $haplo_input.haplo == "Yes":
+		--haplo		1
+		--iregion       $input_region
+		##--haplosep	$haplo_input.haplosep
+		--haploseq	$haplo_input.haploseq
+		#if $haplo_input.consseq_input.askConsseq == "Yes":
+			--cq		1
+			--consseq	$haplo_input.consseq_input.consseq
+			--conshaplo	$haplo_input.consseq_input.conshaplo
+		#else:
+			--cq            0
+		#end if
+	#else:
+		--haplo         0	
+	#end if
+
+	--noendvariant	$noendvariant
+
+	--long_args	$long_args
+	
+
+    </command>
+    <configfiles>
+	## write long arguments (such as the series argument dictionary and the series order list to a file reading by the .py file
+	<configfile name='long_args'>
+	#set $x = {}
+	#set $y = [] 
+	#for $i, $s in enumerate( $sample_series ):
+                $y.append($s['sample_name'].value)
+                #set $x[$s['sample_name'].value] = {'iqlx' : $s.input_qlx.file_name, 'icalls' : $s.input_calls.file_name, 'iconsen' : $s.input_consen.file_name}
+        #end for
+-series
+$x
+-sample_order
+$y
+	</configfile>	
+    </configfiles>		
+    <inputs>
+	<param name="sample_name"	type="text" label="Sample name" sample=""/>
+	<param name="input_qlx"         type="data" format="qlx" label="QLX input file (RC454 output)"/>
+        <param name="input_calls"       type="data" format="txt" label="Variant Calls (V-Phaser output)"/>
+        <param name="input_consen"      type="data" format="txt" label="Consensus Sequence "/>
+
+    <repeat name="sample_series" title="Sample Series" help="See note below regarding multiple samples. Please enter samples in chronological order if you want to produce time-series heatmaps">
+	<param name="sample_name"       type="text" label="Sample name" value=""/>
+	<param name="input_qlx"		type="data" format="qlx" label="QLX input file (RC454 output)"/>
+	<param name="input_calls"	type="data" format="txt" label="Variant Calls (V-Phaser output)"/>
+        <param name="input_consen"      type="data" format="txt" label="Consensus Sequence "/>
+   </repeat>
+
+	<param name="nt" type="select" label="- nt - Generate nucleotide frequency file?">
+		<option value="0">No</option>
+                <option value="1">Yes</option>
+	</param>
+
+	<conditional name="codon_input">
+		<param name="codon" type="select" label="- codon - Generate codon frequency output files?" help="Requires a Genelist input file.">
+                	<option value="No">No</option>
+                	<option value="Yes">Yes</option>
+        	</param>
+		<when value="No" />
+                <when value="Yes">
+			<param name="input_genes"       type="data" format="txt" label="Gene List "/>
+		</when> <!-- "Yes" -->
+	</conditional> <!-- "codon_input" -->
+
+	<conditional name="haplo_input">
+		<param name="haplo" type="select" label="- haplo - Generate haplotype frequency output files?" help="Requires a HaploRegion input file.">
+			<option value="No">No</option>
+			<option value="Yes">Yes</option>
+		</param>
+		<when value="No" />
+		<when value="Yes">
+			<param name="input_region"      type="data" format="txt" label="Haplo Region List "/>
+
+			<!--- This param exists in the documentation, but does not seem to be handled by the Perl script. Ignoring for now
+			<param name="haplosep" type="integer" value="0" label="- haplosep - Specify how many amino acids are on each side of the region of interest in your haplotypes." help="This will insert extra spaces at each end of the region. For example, if you have a haplotype region of interest of 9 amino-acids with 3 amino-acids on each side, setting haplosep to 5 would make the output haplotype look like:  LAA ATTAGSRQN ASS"/>
+			-->
+			<param name="haploseq" type="select" label="- haploseq - Output a nucleotide and amino-acid alignment of all the haplotypes found?" help="These will be included in the zipped haplotypes output folder">
+				<option value="0">No</option>
+				<option value="1">Yes</option>
+			</param>	
+			<conditional name="consseq_input">
+                        	<param name="askConsseq" type="select" label="Would you like to specify a consensus sequence for the haplotype that the haplotype found in the samples will be compared to?">
+                                	<option value="No">No</option>
+                                	<option value="Yes">Yes</option>
+				</param>
+                                	<when value="No" />
+                                	<when value="Yes">
+                                        	<param name="consseq" type="data" label="- consseq - Please specify haplotype consensus sequence file:"/>
+                                
+                                        	<param name="conshaplo" type="data" label="- conshaplo - Specify a file that will contain the position for the haplotype regions in the consseq." />
+					</when> <!-- "Yes" -->
+                	</conditional> <!-- consseq_input -->
+		</when> <!-- "Yes" -->
+	
+	</conditional> <!-- haplo_input -->
+
+	<param name="noendvariant" type="integer" value="0" label="- noendvariant - Filter out variants that are only seen in the N bases at either end of a read." help="This can sometimes filter out variants that are caused by misalignments which are more frequent at the end of reads. It will still count variants at the ends of reads as long as they are seen once outside this range." />
+
+   </inputs> 
+
+   <outputs>
+	<data format="txt" name= "out_ntfreq" 	label="${tool.name} on ${on_string}: Nucleotide Frequencies" 
+		 from_work_dir="Vpro_ntfreq.txt"    >
+		<filter>nt == "1"</filter>
+	</data>
+	<data format="xls" name= "out_cod_freq" 	label="${tool.name} on ${on_string}: Codon Frequencies" 
+		from_work_dir="Vpro_codonfreq.xls"    >
+		<filter>codon_input['codon'] == "Yes"</filter>
+	</data>
+	<data format="txt" name= "out_cod_det" 	label="${tool.name} on ${on_string}: Codon Details"   
+		from_work_dir="Vpro_codon_details.txt"    >
+		<filter>codon_input['codon'] == "Yes"</filter>
+	</data>
+	<data format="zip" name= "out_heat" 	label="${tool.name} on ${on_string}: Heatmaps"   
+		from_work_dir="Vpro_Heatmap_All.zip"    >
+		<filter>codon_input['codon'] == "Yes"</filter>
+	</data>
+	<data format="zip" name= "out_haplo" 	label="${tool.name} on ${on_string}: Haplotypes"   
+		from_work_dir="Vpro_haplotypes.zip"    >
+		<filter>haplo_input['haplo'] == "Yes"</filter>
+	</data> 
+
+   </outputs>
+
+<help>
+
+**V-PROFILER Overview**
+
+V-Profiler_ takes a read alignment and a list of accepted variants at each location in the alignment (such as would be generated by V-Phaser) and analyzes the intra-host diversity of a genome. This can be done at the nucleotide level over the whole sequence, at the codon level for each gene specified in a list, and at the haplotype level for any region delimited (note that the region must not exceed a read length, and is preferably of shorter length such as an epitope or a loop of interest). It will also output Heatmaps of the diversity at the codon level using R.
+
+.. _V-Profiler: http://www.broadinstitute.org/scientific-community/science/projects/viral-genomics/v-profiler
+
+------
+
+**Inputs**
+
+For each sample, the following inputs are required:
+
+ - QLX Alignment file (RC454 output) [Format(s): QLX]
+ - Variant Calls file (V-Phaser output) [Format(s): TEXT]
+ - Consensus sequence file (typically Mosaik output, but can be from another source) [Format(s): FASTA]
+
+.. class class:: infomark
+
+Note that at least one of the options 'nt', 'codon' or 'haplo' needs to be chosen. Additionally, the following inputs may be required:
+
+ - Gene List [for 'codon' option only]. A user-defined list of genes contained in the consensus and their positions in the consensus alignment. See example below. (optional) [Format(s): TEXT]
+ - Haplotype Region List [for 'haplo' option only]: A user-defined list of known haplotype regions on the consensus alignment. See example below. (optional) [Format(s): TEXT]
+
+Note that multiple samples can be analysed as a time series. This can be done by adding each additional sample as an additional *sample series*. Under a time series, Heatmaps will all be done by comparing the % of agreement with the dominant residue to the first time point in the series, and the haplotype output files will include every time point in the same file comparing them to one another. If you want samples to be treated independently, they should each be run on their own.
+
+*Gene List Example Input*:
+
+	Your gene list should be a text file containing **TEB-SEPARATED** entries of *Gene_name* TAB *Start_position* TAB *End_Position*, as below:
+
+::
+
+	Gag     1       1521
+	Pol	1305	4325
+	Vif	4270	4848
+	Vpr	4788	5075
+	Tat1	5059	5274
+	Tat2	7650	7739
+	Rev1	5198	5272
+	Rev2	7648	7923
+	Vpu	5290	5535
+	Env	5453	8065
+
+*Haplotype Region List Example Input*:
+
+	Your haplotype list file should be a text file containing **TEB-SEPARATED** entries of *haplo_name* TAB *Start_position* TAB *End_Position*, as below:
+
+:: 
+
+	A25_ELRQHLLRW	2388	2414
+	B15_RMRRAEPAA	8115	8141
+	B15_FQTKGLGISY	5170	5199
+
+------
+
+**Outputs**
+
+ - NTFREQ file. Contains nucelotide frequencies ([Format(s): TEXT]
+ - CODONFREQ file. Contains codon frequencies ([Format(s): TEXT]
+ - CODON_DETAILS file. Codon call information ([Format(s): TEXT]
+ - HEATMAP_ALL folder. Zipped folder that contains all the relevant heatmaps for the samples ([Format(s): ZIP]
+ - HAPLOTYPES folder. Haplotype analysis output [Format(s): ZIP]
+
+a) xyz_xyz_ntfreq.txt 
+
+This is the main nucleotide frequency table. For each position it gives you what the coverage was in your genome and the frequency of each accepted variant (as a fraction of 1, 1 being 100%). Note that the frequencies count ONLY the variants that are called by v-phaser and drops the rest (both from coverage and from frequency calls), considering them to be sequencing error.  For Deletions, you have 2 columns. The first one gives you the frequency of deletion starting at the position, the second the frequency of deletions that are extended at this position (this can allow you to distinguish between long deletions or multiple small deletions, and if you want to count deletions as a single event for an analysis no matter its length you can ignore the second column). Insertions also have 2 columns, one for the frequency of insertions and the other for the observed insertions. Note that the frequency of insertion represents the % of reads that have an insertion after the position where it is noted.
+
+b) xyz_xyz_codonfreq.xls
+
+This is the main codon frequency table for a sample. It will contain the data for each gene one after the other. The first column in the file is the nucleotide position in the full genome. The second column is the amino-acid position within the gene. The third column is the coverage at this position of accepted calls (in parenthesis, only coverage of high quality calls). The 4th column is the consensus codon (the one found in the consensus sequence supplied as an input, which could different from the highest frequency call). You then have a serie of columns for each call made, in the format “[AA] ([freqCodon]%)([codon])”. Note that the % is the % of the codon, not of the amino-acid.
+
+c) xyz_xyz_codon_details.txt
+
+This file contains more details about each codon call, particularly about which codons were observed but rejected. This can be interesting if you have doubts about why a particular codon was not called, or to see for example in time-series data if a particular codon was seen in previous time points but was simply not frequent enough to be accepted then.
+
+d) xyz_xyz_Heatmap_All folder
+
+This folder contains all the Heatmaps for codon frequency. If you do not use the –allheat option, it will contain 3 Heatmaps, one for all variant, one for only synonymous changes, and one for only non-synonymous changes. If you use the –allheat option, it has one .pdf for each gene and one for the full genome (all genes back to back in the order of the genelist). It also contains the .r files that R used to generate the Heatmap. In the main folder you will find the Heatmaps for all codon mutation. You will find 2 folders, *Syn* and *NonSyn*, that contain the Heatmaps for only synonymous calls and only non-synonymous calls respectively.
+
+e) xyz_haplotypes folder 
+This folder contains the outputs for the Haplotype analysis. It is tab-delimited and so could be more readable in a program like Excel or something similar. The files in the folder are named xyz_xyz_output.txt. For time series, the sample name is the name of the first sample in the series. The file contains the haplotype in codon and amino-acid sequence, and the frequency of each haplotype in % for each sample, with the number of times it was counted. If you use the –haploseq option, you will also have all the files containing the aligned nucleotide and amino-acid sequence of each haplotype region.
+
+
+</help>
+</tool>

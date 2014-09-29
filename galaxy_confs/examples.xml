@@ -1,0 +1,123 @@
+## A collection of interesting commands and stuff that I've found which might prove useful later on
+
+#####################################################################################3
+
+  <command interpreter="python">fastq_filter.py $input_file $fastq_filter_file $output_file $output_file.files_path '${input_file.extension[len( 'fastq' ):]}'</command>
+
+##########################################################################33
+
+    <command interpreter="python">
+        #if   str($fastq_output) == "fastq_false"  #sff_extract.py $clip --seq_file=$out_file3 --qual_file=$out_file4 --xml_file=$out_file2 $input
+        #elif str($fastq_output) == "fastq_true"   #sff_extract.py $clip --fastq --seq_file=$out_file1 --xml_file=$out_file2 $input
+        #end if#
+    </command>
+    <inputs>
+        <param format="sff" name="input" type="data" label="Extract from this dataset"/>
+        <param name="clip" type="select" label="Completely remove ends with low qual and/or adaptor sequence">
+            <option value="">No</option>
+            <option value="--clip">Yes</option>
+        </param>
+        <param name="fastq_output" type="boolean" truevalue="fastq_true" falsevalue="fastq_false" checked="False" label="Do you want FASTQ file instead of FASTA + FASTA quality file?" />
+    </inputs>
+    <outputs>
+        <data format="fastqsanger" name="out_file1" >
+            <filter>fastq_output is True</filter>
+        </data>
+        <data format="xml" name="out_file2">
+        </data>
+        <data format="fasta" name="out_file3">
+            <filter>fastq_output is False</filter>
+        </data>
+        <data format="qual" name="out_file4">
+            <filter>fastq_output is False</filter>
+        </data>
+    </outputs>
+##################################################################33
+
+    <outputs>
+        <data format="bed" name="insertions" label="${tool.name} on ${on_string}: insertions" from_work_dir="tophat_out/insertions.bed">
+            <expand macro="dbKeyActions" />
+        </data>
+
+<help>
+**Know what you are doin**
+
+.. class:: warningmark
+
+There is no such thing (yet) as an automated gearshift in splice junction identification. It is all like stick-shift driving in San Francisco. In other words, running this tool with default parameters will probably not give you meaningful results. A way to deal with this is to **understand** the parameters by carefully reading the `documentation`__ and experimenting. Fortunately, Galaxy makes experimenting easy.
+
+.. __: http://tophat.cbcb.umd.edu/manual.html
+</help>
+
+
+#########################################################################
+<tool id="cuffmerge" name="Cuffmerge" version="0.0.5">
+
+    <command interpreter="python">
+        cuffmerge_wrapper.py
+
+            --num-threads="4"
+
+            ## Use annotation reference?
+            #if $annotation.use_ref_annotation == "Yes":
+                -g $annotation.reference_annotation
+            #end if
+
+            ## Use sequence data?
+            #if $seq_data.use_seq_data == "Yes":
+                -s
+                #if $seq_data.seq_source.index_source == "history":
+                    --ref_file=$seq_data.seq_source.ref_file
+                #else:
+                    --ref_file="None"
+                #end if
+                --dbkey=${first_input.metadata.dbkey}
+                --index_dir=${GALAXY_DATA_INDEX_DIR}
+            #end if
+
+            ## Outputs.
+            --merged-transcripts=${merged_transcripts}
+
+            ## Inputs.
+            ${first_input}
+            #for $input_file in $input_files:
+              ${input_file.additional_input}
+            #end for
+
+    </command>
+
+
+    <outputs>
+        <data format="gtf" name="merged_transcripts" label="${tool.name} on ${on_string}: merged transcripts"/>
+    </outputs>
+
+#########################################################################
+# Defaults for setting a full parameter list
+        <conditional name="params">
+            <param name="settingsType" type="select" label="Default / Advanced Settings" 
+                        help="Select whether you would like to use the Mosaik tool with default or customised settings.">
+              <option value="preSet">Use Defaults</option>
+              <option value="full">Full parameter list</option>
+            </param>
+            <when value="preSet" />
+            <!-- Full/advanced params. -->
+            <when value="full">
+              <param name="" type="select" label="" help="">
+                  <option value=""> </option>
+                  <option value=""> </option>
+                  <option value=""> </option>
+              </param>
+              <param name="" type="integer" value="2" label="" help="" />
+              <param name="" type="select" label="">
+                  <option selected="true" value=""> </option>
+                  <option value=""> </option>
+              </param>
+
+######################################################################
+# Filtering outputs depending on settings:
+
+        <data format="tabular" name="fusions" label="${tool.name} on ${on_string}: fusions" from_work_dir="tophat_out/fusions.out">
+            <filter>(params['settingsType'] == 'full' and params['fusion_search']['do_search'] == 'Yes')</filter>
+        </data>
+
+######################################################################

@@ -1,0 +1,41 @@
+#!/usr/bin/python
+
+'''
+
+Python wrapper for runMosaik2.pl file. The wrapper was required since the the Perl script only takes a "basename" output option and builds output files from there. I had difficulties getting Galaxy to locate the correct files
+
+'''
+
+import os
+import subprocess
+import argparse
+
+# Define usage options using argparse library
+parser = argparse.ArgumentParser(description = 'Wrapper for runMosaik2.pl, which is a precursor for using the RC454 tood')
+parser.add_argument('-fa', 	help = 'Reads in FASTA format')
+parser.add_argument('-qual', 	help = 'Read quality file in qual format')
+parser.add_argument('-ref', 	help = 'Reference sequence in FASTA format')
+parser.add_argument('-out_qlx', help = 'Name of the QLX format output file')
+parser.add_argument('-out_sam', help = 'Name of the SAM format output file')
+parser.add_argument('-out_bam', help = 'Name of the BAM format output file')
+parser.add_argument('-out_txt', help = 'Name of the TXT format output file')
+
+args = parser.parse_args()
+dargs =  vars(args)
+
+# Perl file execution
+cmd = 'runMosaik2.pl -fa %s -qual %s -ref %s -o XXX -qlx -param454' % (dargs['fa'], dargs['qual'], dargs['ref'])
+
+subprocess.check_call(cmd, shell=True)
+
+os.rename('XXX.sam', dargs['out_sam'])
+os.rename('XXX.bam', dargs['out_bam'])
+if os.path.exists(os.path.join(os.getcwd(), 'XXX.qlx')):
+	os.rename('XXX.qlx', dargs['out_qlx'])
+if os.path.exists(os.path.join(os.getcwd(), 'XXX_unmappedIDs.txt')):
+	os.rename('XXX_unmappedIDs.txt', dargs['out_txt'])
+
+
+
+
+ 

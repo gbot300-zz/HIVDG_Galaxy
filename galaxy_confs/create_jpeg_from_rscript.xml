@@ -1,0 +1,36 @@
+<tool id="jpeg_maker" name="Create JPEG">
+
+    <description>from V-Profiler rscript output</description>
+
+    <command interpreter="python">
+        create_jpeg_from_rscript.py
+
+        ## required input
+        --rfile		$input_rscript
+	--dfile		$input_data
+
+    </command>
+
+    <inputs>
+        <param name="input_rscript" type="data" format="txt" label="Select input script file (R script file from Vprofiler Heatmaps output)"      />
+	<param name="input_data" type="data" format="txt" label="Select HetmapData.txt input file (from the same folder)" />
+
+    </inputs>
+
+   <outputs>
+        <data format="jpg" name= "image" label="${tool.name} on ${on_string}: JPEG" from_work_dir="jpg_plot.jpg"    />
+	<data format="txt" name= "rscript" label="${tool.name} on ${on_string}: Rfile" from_work_dir="Rscript_jpeg.r"    />
+
+   </outputs>
+
+   <help>   
+Creates a plot in JPEG format from a given R script file. These are from the HEATMAPS output in Vprofiler. 
+
+There is a chance that it could work for other R scripts that produce plots in PDF format. Give it a try.
+
+You can also manually edit the R-script file and change the line that says "pdf(..." to "jpeg(..." as that is (almost) all
+this tool essentially does
+
+   </help>
+</tool>
+

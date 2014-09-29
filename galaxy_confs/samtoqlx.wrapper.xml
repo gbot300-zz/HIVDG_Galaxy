@@ -1,0 +1,65 @@
+<tool id="samtoqlx"  name="Sam to QLX">
+
+	<description>convertor, for use with the BROAD pipeline. </description>
+
+	<command>
+		/opt/exp_soft/galaxy-tools/custom_tools/galaxy_confs/samtoqlx.wrapper.py
+
+		## req input
+
+		--sam	$sam
+
+		--read	$reads
+
+		--qual	$quals
+
+		--ref	$ref
+
+	</command>
+	
+	<inputs>
+		<param name="sam" type="data" format="sam" label="Select SAM input file"/>
+
+		<param name="reads" type="data" format="fasta" label="Select reads FASTA file"/>
+
+		<param name="quals" type="data" format="qual" label="Select reads QUAL file"/>
+
+		<param name="ref" type="data" format="fasta" label="Select reference FASTA file"/>
+
+	</inputs>
+
+	<outputs>
+
+		<data format="qlx"      name = "qlx_output"        label="${tool.name} on ${on_string}: QLX format"
+			from_work_dir= "out.qlx"/>
+
+	</outputs>
+
+	<help>
+
+		Converts SAM file to QLX format. The QLX format is required for many of the BROAD tools. Check the SAM-Tools section in Galaxy if you need to create a SAM file from a BAM format etc.
+
+	</help>
+
+</tool>
+
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

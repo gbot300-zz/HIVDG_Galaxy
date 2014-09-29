@@ -1,0 +1,26 @@
+<tool id="hivdg_get_variants" name="Get variant amino acid positions in comparison to a reference sequence">
+	<description>.</description>
+	<command interpreter="python">variants.py $input $output</command>
+	<inputs>
+		<param format="tabular" name="input" type="data" label="Tab delimited alignment file1"/> -->
+	</inputs>
+	<outputs>
+		<data format="txt" name="output" type="data" label="Variant Sites" />
+	</outputs>
+
+	<help>
+List variant amino acid positions where differences exist between sequence and a reference sequence and count frequency of each variant residue.
+Assumes the first sequence in the alignment is the reference.
+**Inputs**
+
+* tab delimited amino acid alignment file....
+
+-----
+
+**Outputs**	
+
+* List of variant residues per amino acid position...
+
+
+	</help>
+</tool>

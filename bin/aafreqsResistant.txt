@@ -1,0 +1,1 @@
+/home/gbotha/galaxy-dist/tools/custom_tools/nobu_tools/input_files/aafreqsResistant.txt

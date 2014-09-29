@@ -1,0 +1,42 @@
+<tool id="runRC454" name="Improve Alignment of reads vs. consensus">
+
+    <description>using RC454</description>
+
+    <command>
+<!-- the order of these is important actually -->
+        rc454.pl.wrapper.py
+        $reads_qlx
+	$reads_fasta
+        $reads_qual
+        $ref_fasta
+	-out_fasta	$out_fasta
+	-out_qual	$out_qual
+        -out_bam        $out_bam
+        -out_sam        $out_sam
+        -out_txt        $out_txt
+        -out_qlx        $out_qlx
+    </command>
+
+    <inputs>
+	<param name="reads_qlx"		type="data" format="qlx"   label="Select reads QLX file (Mosaik output)" />
+        <param name="reads_fasta"       type="data" format="fasta" label="Select reads fasta file"      />
+        <param name="reads_qual"        type="data" format="qual"  label="Select reads quality file"    />
+        <param name="ref_fasta"         type="data" format="fasta" label="Select consensus fasta file"/>
+   </inputs>
+
+   <outputs>
+	<data format="fasta"	name = "out_fasta"	label="${tool.name} on ${on_string}: FASTA output"	/>
+	<data format="qual"	name = "out_qual"	label="${tool.name} on ${on_string}: QUAL output"        /> 
+       	<data format="bam" 	name = "out_bam" 	label="${tool.name} on ${on_string}: BAM output"      />
+	<data format="sam" 	name = "out_sam" 	label="${tool.name} on ${on_string}: SAM output"      />
+       	<data format="txt" 	name = "out_txt" 	label="${tool.name} on ${on_string}: Unmapped Reads"          />
+       	<data format="qlx" 	name = "out_qlx" 	label="${tool.name} on ${on_string}: QLX output"      />
+   </outputs>
+
+ <help>
+This tool aligns mapped reads to a reference file. The reads must be mapped using Mosaik as a pre-process to this
+
+----
+</help>
+</tool>
+

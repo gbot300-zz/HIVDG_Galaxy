@@ -1,0 +1,24 @@
+
+<tool id="fastq_to_fas_qual" name="Split FastQ file">
+  <description>into Fasta and Qual files</description>
+  
+  <command interpreter="python">fastQ_to_fasta_qual.py 
+	-i $input
+	xxx.fasta
+	yyy.qual
+
+  </command>
+  
+  <inputs>
+    <param format="fastq" name="input" type="data" label="FastQ File"/>
+  </inputs>
+  
+  <outputs>
+    <data format="fasta" 	name="output_fasta" label="${tool.name} on ${on_string}: FASTA output" from_work_dir="xxx.fasta" />
+    <data format="qual454"  	name="output_qual"  label="${tool.name} on ${on_string}: QUAL output" from_work_dir="yyy.qual" />
+  </outputs>
+
+  <help>
+  </help>
+
+</tool>

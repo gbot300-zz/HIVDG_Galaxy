@@ -1,0 +1,21 @@
+<tool id="FastTree" name="Create phylogenetic tree">
+
+    <description>using FastTree</description>
+
+    <command>
+        FastTreeMP  -quiet $al_type $input_alignment &gt; $output
+    </command>
+
+    <inputs>
+	<param name="input_alignment"   type="data" format="fasta" label="Select Fasta alignment file" />
+	<param name="al_type" type="select" label="Please select type of aligment">
+            <option value="-nt">Nucleotide</option>
+            <option value="">Protein</option>
+        </param>   
+    </inputs>
+
+   <outputs>
+       <data format="text" name="output" />
+   </outputs>
+</tool>
+

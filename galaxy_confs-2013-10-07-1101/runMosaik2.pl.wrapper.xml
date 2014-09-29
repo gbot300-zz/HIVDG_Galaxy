@@ -1,0 +1,35 @@
+<tool id="runMosaik" name="Align reads to mapped consensus with Mosaik">
+  
+    <description>in preparation for RC454</description>
+  
+    <command>
+        runMosaik2.pl.wrapper.py 
+	-fa 		$reads_fasta 
+	-qual		$reads_qual 
+	-ref 		$ref_fasta 
+	-out_bam 	$out_bam
+	-out_sam	$out_sam
+	-out_qlx	$out_qlx
+	-out_txt	$out_txt 
+	<!-- runMosaik2.pl -fa $fasta_data -qual $qual_data -ref $ref_seq -o $output -qlx -param454 -->
+    </command>
+    
+    <inputs>    
+       	<param name="reads_fasta"	type="data" format="fasta" label="Select reads fasta file" 	/>    
+       	<param name="reads_qual"    	type="data" format="qual"  label="Select reads quality file" 	/>    
+       	<param name="ref_fasta"     	type="data" format="fasta" label="Select consensus fasta file"/>
+   </inputs>
+  
+   <outputs>  
+       <data format="sam" name= "out_sam" label="${tool.name} on ${on_string}: SAM output" 	/>
+       <data format="bam" name= "out_bam" label="${tool.name} on ${on_string}: BAM output"  	/>
+       <data format="txt" name= "out_txt" label="${tool.name} on ${on_string}: Unmapped Reads"  	/>
+       <data format="qlx" name= "out_qlx" label="${tool.name} on ${on_string}: QLX output"    	/> 
+   </outputs>
+ 
+ <help>
+This tool maps reads using Mosaik, which is a pre-processing step for the RC454 aligner:
+
+----
+</help>
+</tool>

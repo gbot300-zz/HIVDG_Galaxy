@@ -1,0 +1,1 @@
+../bin/bin_by_seqstring.py

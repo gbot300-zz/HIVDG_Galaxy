@@ -1,0 +1,4 @@
+You have to make the config changes in the configfile.txt file and then run 'perl configPaths.pl'
+
+Note that I had to add 2 lines in the configPaths.pl file to make sure the config for the networkpath gets written to the 
+runMosaik2.pl file

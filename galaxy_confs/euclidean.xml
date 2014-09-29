@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<tool id="AminoAcid_EuclideanDistance" name="Euclidean-based amino acid distances">
+	<description>to compare amino acid proportions between 2 alignments</description>
+	<command interpreter="Rscript">euclidean_dist.R $input_1 $input_2 $output $plot $perm</command>
+	<inputs>
+		<param format="fasta" name="input_1" type="data" label="fasta dna alignment with all sequences"/> -->
+		<param format="tabular" name="input_2" type="data" label="sequence names for the control/one comparison group"/> -->
+	</inputs>
+	<outputs>
+		<data format="txt" name="output" type="data" label="Euclidean Permutation pvalues" />
+		<data format="pdf" name="plot" type="graph" label="Plot of 1-pvalues"/>
+	</outputs>
+
+	<help>
+Counts the proportions of amino acids at each codon site within each set of sequences and calculates the difference between the two sets of sequences using the euclidean distance measure. Reads in (i) one codon fasta alignment with all sequences and (ii)a text file listing the names of sequences belonging to one of the comparative sets of sequences. It outputs a file listing permutation pvalues for each site and a pdf graph plotting 1-pvalues for each amino acid site.
+
+**Inputs**
+
+* Codon alignment file....
+
+* Text file with a list of names for one sequence set....
+
+-----
+
+**Outputs**	
+
+* Text file with pvalues...
+
+* Graph plotting '1-pvalue' per site...
+
+	</help>
+</tool>

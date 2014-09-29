@@ -1,0 +1,145 @@
+<tool id="vphaser1" name="V-Phaser">
+
+    <description>variant caller on 454 data</description>
+
+    <command>
+        vphaser.pl.wrapper.py
+
+	## required input
+        --i		$input_qlx
+
+	## optional input
+        #if $params.settingsType == "full":
+		--fullSettings  1
+		--model		$params.model	
+		--qqplot	$params.qqplot	
+		--offset	$params.offset
+		--l		$params.l
+	#else
+		--fullSettings  0
+	#end if
+
+    <!-- perl ../vphaser.pl -i rcVTest_final.qlx -o vp_VTest -->
+
+    </command>
+
+    <inputs>
+        <param name="input_qlx" type="data" format="qlx" label="Select QLX input file (RC454 output)"      />
+
+	<conditional name="params">
+            <param name="settingsType" type="select" label="Default / Advanced Settings" 
+                        help="Select whether you would like to use default or customised settings.">
+              <option value="preSet">Use defaults</option>
+              <option value="full">Show full parameter options</option>
+            </param>
+            <when value="preSet" />
+            <when value="full">
+            <!-- Full/advanced params. -->
+		<param name="model" type="integer" value="1" label="- model - Select model to use:"
+			help="There are 8 models available, and setting the model to 0 will run them all. See the Parameters section below for details" />
+		<param name="qqplot" type="select" label="- q - Would you like to output a text file containing data for a QQ-plot on the base calls at each position?">
+			<option value="0">No</option>
+			<option value="1">Yes</option>
+		</param>
+		
+		<param name="offset" type="integer" value="0" label="- offset - Position offset from start of reads"/>
+		
+		<param name="l" type="integer" value="2" label="- l - Lowest number of time required to see a variant"
+			help="This is irrespective of the model settings. To see variants picked up only once, set this value to 1." />
+	     </when> <!-- "full" -->
+	</conditional> <!-- "params -->
+
+   </inputs>
+
+   <outputs> 
+	<data format="txt" name= "vphaser_out_calls" label="${tool.name} on ${on_string}: Calls" from_work_dir="vphaser_out_calls.txt"    />
+        <data format="txt" name= "vphaser_out_model" label="${tool.name} on ${on_string}: Model" from_work_dir="vphaser_out_model.txt"    />
+        <data format="txt" name= "vphaser_out_out" label="${tool.name} on ${on_string}: Out"  	from_work_dir="vphaser_out_out.txt"    />
+        <data format="txt" name= "vphaser_out_snp" label="${tool.name} on ${on_string}: SNP"  	from_work_dir="vphaser_out_snp.txt"    />
+	<data format="txt" name= "vphaser_out_qqplot" label="${tool.name} on ${on_string}: QQ-plot data" 
+		from_work_dir="vphaser_out_qqplot.txt" >
+		<filter>(params['settingsType'] == 'full' and params['qqplot'] == '1')</filter>
+	</data>
+
+   </outputs>
+
+<help>
+**V-PHASER Overview**
+
+V-Phaser_ calls variants in mixed populations from ultra-deep sequence data.  V-Phaser combines information regarding the covariation (i.e. phasing) between observed variants to increase sensitivity and an expectation maximization algorithm that iteratively recalibrates base quality scores to increase specificity. 
+
+.. class:: infomarker
+
+V-Phaser output is required for V-Profiler.
+
+.. _V-Phaser: http://www.broadinstitute.org/scientific-community/science/projects/viral-genomics/v-phaser
+
+------
+
+**Inputs**
+
+ - QLX file (RC454 output) [Format(s): QLX]
+
+------
+
+**Outputs**
+
+ - Calls: Call file [Format(s): TEXT]
+ - Model: Model file [Format(s): TEXT]
+ - Out: Observation file [Format(s): TEXT]
+ - SNP: SNP file [Format(s): TEXT]
+ - qqplot: Data to generate a QQplot (optional) [Format(s): TEXT] 
+
+.. class: infomarker
+
+V-Phaser generates 4 main output files:
+
+a) ..._calls.txt
+
+This file contains a list of which variants are accepted for each position. At each position in the genome either a 0 or 1 is noted for each of the 4 bases as well as Deletion or Insertion. A 1 means that this variant base or indel is accepted at this position by v-phaser (it could be because it is the dominant call or a variant seen frequently enough). This file is required as an input for v-profiler.
+
+b) ..._model.txt
+
+This file contains details about the model and how it determined which calls it made at each position. It is usually not necessary to look at unless you have reasons to believe there is something wrong in the results.
+
+c) ..._out.txt
+
+This file contains details about what was observed at each position, what the dominant call was, and how many times you counted each other base or indel. Note that this is not the main nucleotide frequency table, which is obtained through v-profiler after adding additional filtering and removing erroneous calls.
+
+d) ..._snp.txt
+
+This file contains details about how each variant was called (variant or error) at each step of the analysis as well as how it was accepted (through pileup or phase) and what the sensitivity was. The final step in the file is what the final calls are.
+
+and optionally...
+
+e) ..._qqplot.txt
+
+This file contains the p-values for for each postion's base call. This can be used to draw a QQ-plot of the bases
+
+------
+
+**Parameters**
+
+model 
+There are 3 parts to a model:
+First, an estimation parameter, which will either be AutoCalibrate or ACNoPhase
+(AutoCalibrate with no phasing information used).
+Second, a type parameter which is either Uniform if the same breakpoints are
+used for calling variants for all loci, or Base if the breakpoints can vary from one
+locus to the other.
+Finally, a filter that either looks at all bases when calling variants, or high quality
+bases only.
+The models are the following :
+0 : Run all models
+1 : AutoCalibrate, Base, High Quality
+2 : AutoCalibrate, Base, All Quality
+3 : AutoCalibrate, Uniform, High Quality
+4 : AutoCalibrate, Uniform, All Quality
+5 : ACNoPhase, Base, High Quality
+6 : ACNoPhase, Base, All Quality
+7 : ACNoPhase, Uniform, High Quality
+8 : ACNoPhase, Uniform, All Quality
+
+</help>
+</tool>
+

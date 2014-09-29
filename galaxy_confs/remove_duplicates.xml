@@ -1,0 +1,34 @@
+<tool id="hivdg_remove_duplicates" name="Remove duplicates">
+	<description>.</description>
+	<command interpreter="python">remove_duplicates.py $input $output $log</command>
+	<inputs>
+		<param format="tabular" name="input" type="data" label="Tab delimited alignment file"/>
+	</inputs>
+	<outputs>
+		<data format="fasta" name="output" type="data" label="Fasta output without duplicates" />
+		<data format="txt" name="log" type="data" label="Process log"/>
+	</outputs>
+
+	<help>
+Remove duplicate sequences and rename identical sequence names. Reads a tab delimited alignment and outputs a fasta file with one copy of each sequence and prints names of deleted copies of duplicate sequences. Also prints the number of sequences in the output file.
+
+**Inputs**
+
+**Tab delimited alignment file**
+
+* Tab delimited alignment file....
+
+-----
+
+**Outputs**	
+
+**Fasta output without duplicates**
+
+* Fasta output without duplicates...
+
+**Process Log**
+
+* Process Log...
+
+	</help>
+</tool>

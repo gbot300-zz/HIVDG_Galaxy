@@ -1,0 +1,42 @@
+# The TestData folder should contain the following files, excluding this one:
+VTest_reads.fa - example reads fasta of an HIV sample
+VTest_reads.qual - example reads qualities
+VTest_assembly.fa - example assembly made from these reads
+VTest_genelist.txt - example genelist giving the position of each genes on the assembly
+VTest_primers.txt - example list of primer location that were used for the sequencing of the data
+
+# Path configuration for script location, muscle location, R location, etc.
+# Modify any location that needs to be specified first in configfile.txt
+# Run command line from the folder RC454_SoftwarePackage_201109
+
+perl configPaths.pl configfile.txt
+
+# Run all following command lines from the folder TestData (all command lines are assuming that the scripts are in the root
+# folder, adjust paths accordingly if you moved them)
+
+# First run Mosaik to create a raw read alignments. Note that this was tested with Mosaik version 1.1.0013,
+# alignment results might be slightly different with another version
+
+perl ../runMosaik2.pl -fa VTest_reads.fa -qual VTest_reads.qual -ref VTest_assembly.fa -o VTest_raw -qlx -param454
+# For Mosaik v1 :
+perl ../runMosaik.pl VTest_reads.fa VTest_reads.qual VTest_assembly.fa VTest_raw
+
+# Then run RC454 to clean-up the reads. The -bam option will create the sam/bam outputs, the -primers option specifies a primer list
+# so that reads that started in these regions will be trimmed off in case this is primer sequence instead of real data, and the
+# -genelist option specifies the list of genes so that the verification not to break reading frame only happens within the gene
+# positions.
+
+perl ../rc454.pl VTest_raw.qlx VTest_reads.fa VTest_reads.qual VTest_assembly.fa rcVTest -primers VTest_primers.txt -genelist VTest_genelist.txt -bam
+# For Mosaik v1 :
+perl ../rc454_mosaik1.pl VTest_raw.qlx VTest_reads.fa VTest_reads.qual VTest_assembly.fa rcVTest -bam -primers=VTest_primers.txt -genelist=VTest_genelist.txt
+
+
+# You can test to see if qlxToSam.pl and samToQlx.pl are running properly running these tests to create
+# the .qlx and .sam output from the other file that is produced by Mosaik. Note that while the .qlx file
+# should be in all points identical to the one from Mosaik (so you can 'diff' the 2 files and obtain no difference), 
+# the .sam file will be slightly different with one fewer header line and some extra details on each row. 
+# The quality of each read alignment will also be set to 255
+# The cigar string, read and quality sequences should all be identical however.
+
+perl ../qlxToSam.pl rcVTest_final.qlx VTest_assembly.fa rcVTest_final_test.sam -readfa rcVTest_cleaned.fasta -readq rcVTest_cleaned.qual
+perl ../samToQlx.pl rcVTest_final.sam VTest_assembly.fa rcVTest_final_test

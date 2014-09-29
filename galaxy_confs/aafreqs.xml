@@ -1,0 +1,31 @@
+<tool id="hivdg_get_aafrequences" name="Compare amino acid frequences between 2 alignments">
+	<description>.</description>
+	<command interpreter="python">aafreqs.py $input_1 $input_2 $output $log</command>
+	<inputs>
+		<param format="tabular" name="input_1" type="data" label="Tab delimited alignment file1"/> -->
+		<param format="tabular" name="input_2" type="data" label="Tab delimited alignment file2"/> -->
+	</inputs>
+	<outputs>
+		<data format="txt" name="output" type="data" label="Fisher-exact test pvalues" />
+		<data format="txt" name="log" type="data" label="Amino acid counts per site"/>
+	</outputs>
+
+	<help>
+Counts and compares the frequency of amino acids at each codon site between 2 alignments using a fisher's exact test. Reads in 2 tab delimited alignments and outputs a file listing pvalues for each site and a log file listing the counts of individual amino acids at each site.
+
+**Inputs**
+
+* First tab delimited alignment file....
+
+* Second tab delimited alignment file....
+
+-----
+
+**Outputs**	
+
+* Fisher's exact pvalues...
+
+* Amino acid counts per site...
+
+	</help>
+</tool>

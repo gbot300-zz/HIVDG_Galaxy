@@ -1,0 +1,256 @@
+<tool id="bin_by_seqstring"  name="Bin sequences by specified motif ">
+
+	<description> in sequence string </description>
+
+	<command>
+		/opt/exp_soft/galaxy-tools/custom_tools/bin/bin_by_seqstring.py.wrapper.py
+		##/home/gbotha/galaxy-dist/tools/custom_tools/galaxy_confs/bin_by_seqstring-TEST.py.wrapper.py	
+
+		## req input
+
+		#if $reads_format.reads == "fasta":
+			--fa $reads_fasta
+		#else:
+			--fq $reads_fastq
+		#end if
+
+		#if $ref_format.refs == "fasta":
+			--rfa $ref_fasta
+		#else:
+			--rfq $ref_fastq
+		#end if
+
+		--pre $pre
+
+		--PID $pid
+
+		--post $post
+
+		#if $consensus.wants_consensus == "Yes":
+			--consensus
+			--sample_name $consensus.sample_name
+			--min_upids $consensus.min_upids
+			--min_ipids $consensus.min_ipids
+			--wtd_opids $consensus.wtd_opids_conditional.wtd_opids
+		#end if
+
+		#if $dump.wants_dump == "Yes":
+			--dump 
+		#end if
+
+		#if $linez.wants_linez == "Yes":
+			--lines 
+		#end if
+
+		#if $sa.wants_sa == "Yes":
+			--sample_alignments
+		#end if
+
+		--wtd_nopids $wtd_nopids_conditional.wtd_nopids
+
+		#if $pid_summary.wants_pid_summary == "Yes":
+			--pid_summary
+		#end if
+
+
+	</command>
+	
+	<inputs>
+		<conditional name="reads_format">
+			<param name="reads" type="select" label="Reads format"
+									help="Select whether reads are in FASTA or FASTQ format">
+				<option value="fasta">FastA</option>
+				<option value="fastq">FastQ</option>
+			</param>
+			<when value="fasta">
+				<param name="reads_fasta" type="data" format="fasta" label="Select reads FASTA file" />
+			</when>
+			<when value="fastq">
+				<param name="reads_fastq" type="data" format="fastq" label="Select reads FASTQ file" />
+			</when>
+		</conditional>
+
+		<conditional name="ref_format">
+			<param name="refs" type="select" label="Reference sequence format"
+									help="Select format of reference sequence">
+				<option value="fasta">FastA</option>
+				<option value="fastq">FastQ</option>
+			</param>
+			<when value="fasta">
+				<param name="ref_fasta" type="data" format="fasta" label="Select reference FASTA file" />
+			</when>
+			<when value="fastq">
+				<param name="ref_fastq" type="data" format="fastq" label="Select reference FASTQ file" />
+			</when>
+		</conditional>
+
+		<param name="pre" type="text" label="Enter PRE sequence"
+			help="The sequence string preceding th motif of interest"/>
+
+		<param name="pid" type="text" label="Enter BINNING sequence"
+			help="The motif of interest. Most of the time this will be a series of 'N's i.e. NNNNNNNNN"/>
+
+		<param name="post" type="text" label="Enter POST sequence"
+			help="The sequence string after the motif of interest"/>
+
+		<conditional name="wtd_nopids_conditional">
+			<param name="wtd_nopids" type="select" label="What do you want to do with reads in which no 'PID' is found (i.e. no binning motif)?">
+				<option value="trash">Discard</option>
+				<option value="dump">Concatenate all reads into a single FASTA/FASTQ file</option>
+				<option value="align">Concatenate all reads in a file and run a multiple alignment on them</option>
+			</param>
+			<when value="trash"/>
+			<when value="dump"/>
+			<when value="align">
+				<param name="aligner" type="select" label="Which tool would you like to use to align with?">
+					<option value="mafft">Mafft</option>
+				</param>
+			</when>
+		</conditional>
+
+		<conditional name="consensus">
+			<param name="wants_consensus" type="select" label="Generate consensus sequence for reads in each bin?"
+				help="Please do not select this option and the option below to do an intermediate binning step, it will break the program. Also note that this adds a considerable amount of computing time so only do this if you require consensus sequences">
+				<option value="Yes">Yes</option>
+				<option value="No">No</option>
+			</param>
+			<when value="No"/>
+			<when value="Yes">
+				<param name="sample_name" type="text" label="Sample name. This will be prefixed to each of the consensus sequences's names'"/>
+
+				<param name="min_upids" type="integer" value="3" label="Minimum number of unidentical representative sequences required to genrate a consensus"/>
+
+				<param name="min_ipids" type="integer" value="2" label="Minimum number of identical representative sequences required to genrate a consensus"/>
+
+				<conditional name="wtd_opids_conditional">
+					<param name="wtd_opids" type="select" label="What do you want to do with reads in which PID's were found, but the representative requirements were not met?">
+						<option value="trash">Discard</option>
+						<option value="dump">Concatenate all reads into a single FASTA/FASTQ file</option>
+						<option value="align">Concatenate all reads in a file and run a multiple alignment on them</option>
+					</param>
+					<when value="trash"/>
+					<when value="dump"/>
+					<when value="align">
+						<param name="aligner" type="select" label="Which tool would you like to use to align with?">
+							<option value="mafft">Mafft</option>
+						</param>
+					</when>
+				</conditional> <!-- wtd_opids_conditional -->
+
+			</when> <!-- value="Yes" -->
+		</conditional> <!-- consensus -->
+
+		<conditional name="sa">
+			<param name="wants_sa" type="select" label="Output alignments for first 100 bins for QC purposes? (only if consensensus enabled)">
+				<option value="Yes">Yes</option>
+				<option value="No">No</option>
+			</param>
+			<when value="No"/>
+			<when value="Yes"/>
+		</conditional>
+
+		<conditional name="dump">
+			<param name="wants_dump" type="select" label="Intermediate binning step?"
+				help="Tick this option if you want to separate your reads multiple times, such as Samples, PIDs, Patient etc. Selecting this will generate a zipped folder containing multiple files, each file containing the reads for a particular binning motif. You need to run a new instance of this tool with each of those files as input to 'drill down' through the binning steps" >
+				<option value="No">No</option>
+				<option value="Yes">Yes</option>
+			</param>
+			<when value="No"/>
+			<when value="Yes"/>
+		</conditional>
+
+		<conditional name="linez">
+			<param name="wants_linez" type="select" label="Input files in happy format?"
+				help="By happy, I mean that each sequence / quality string in your input file is on a single line and not split over multiple lines. If they are split over multiple lines, the computation time is SUBSTANTIALLY increased. I suggest getting your sequences reformatted or changing the settings on your sequencing machine. The tool can handle unhappy sequences though (but dont expect a smile from it).">
+				<option value="Yes">Yes, my sequences are happy </option>
+				<option value="No">Alas, my sequences are in despair</option>
+			</param>
+			<when value="No"/>
+			<when value="Yes"/>
+		</conditional>
+
+		<conditional name="pid_summary">
+			<param name="wants_pid_summary" type="select" label="Would you like to output a CSV file summarising the number of sequences for each PID?">
+				<option value="Yes">Yes</option>
+				<option value="No">No</option>
+			</param>
+			<when value="No"/>
+			<when value="Yes"/>
+		</conditional>
+
+	</inputs>
+
+	<outputs>
+
+		<data format="csv"		name="pid_summary_output"		label="${tool.name} on ${on_string}: PID summary file CSV"
+			from_work_dir= "pid_summary.csv">
+			<filter>(pid_summary['wants_pid_summary'] == 'Yes') </filter>
+		</data>
+
+		<data format="fasta"      name = "consensus_sequencesA"        label="${tool.name} on ${on_string}: Consensus sequences FASTA"
+			from_work_dir= "consensus_sequences.fasta">
+			<filter>(consensus['wants_consensus'] == 'Yes' )</filter> <!--  and reads_format['reads'] == 'fasta -->
+		</data>
+
+		<data format="fasta"	name = "nopids_fasta"		label="${tool.name} on ${on_string}: No PID's output file"
+			from_work_dir= "nopids.fasta">
+			<filter>(wtd_nopids_conditional['wtd_nopids'] == 'dump' )</filter>
+		</data>
+
+		<data format="fasta"    name = "nopids_aligned_fasta"	label="${tool.name} on ${on_string}: No PID's aligned output file"
+			from_work_dir= "nopids_aligned.fasta">
+			<filter>(wtd_nopids_conditional['wtd_nopids'] == 'align' )</filter>
+		</data>
+
+		<data format="fasta"    name = "opids_fasta"       label="${tool.name} on ${on_string}: non-representative PID reads output file"
+			from_work_dir= "other_pids.fasta">
+			<filter>(consensus['wtd_opids_conditional']['wtd_opids'] == 'dump' )</filter>
+		</data>
+
+		<data format="fasta"    name = "opids_aligned_fasta" label="${tool.name} on ${on_string}: non-representative PID aligned reads output file"
+			from_work_dir= "other_pids_aligned.fasta">
+			<filter>(consensus['wtd_opids_conditional']['wtd_opids'] == 'align' )</filter>
+		</data>
+
+		<data format="zip"      name = "alignmentszip"	label="${tool.name} on ${on_string}: Sample Alignments ZIP"
+			from_work_dir= "sample_alignments.zip">
+			<filter>(consensus['wants_consensus'] == 'Yes' and sa['wants_sa'] == 'Yes')</filter>
+		</data>
+
+		<!-- <data format="fastq"      name = "consensus_sequencesQ"        label="${tool.name} on ${on_string}: Consensus sequences FASTQ"
+			from_work_dir= "consensus_sequences.fastq">
+			<filter>(consensus['wants_consensus'] == 'Yes' and reads_format['reads'] == 'fastq')</filter> 
+		</data>-->
+
+		<data format="zip"		name = "binnedzip" label="${tool.name} on ${on_string}: Intermediate bins ZIP"
+			from_work_dir= "binned.zip">
+			<filter>(dump['wants_dump'] == 'Yes')</filter>
+		</data>
+
+		<data format="txt"		name = "log" label="${tool.name} on ${on_string}: Log File TXT"
+			from_work_dir = "log.txt"/>
+
+	</outputs>
+
+</tool>
+
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

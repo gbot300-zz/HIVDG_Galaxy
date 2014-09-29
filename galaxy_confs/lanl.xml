@@ -1,0 +1,43 @@
+<tool id="LANL_EpitopePrediction" name="Epitope Prediction and Similarity">
+	<description>based on LANL reactive and optimal epitopes</description>
+	<command interpreter="python">matchLANL.py $input_1 $input_2 $input_3 $output_1 $output_2 $rsp $rep</command>
+	<inputs>
+		<param format="tabular" name="input_1" type="data" label="tab delimited amino acid alignment"/>
+		<param format="txt" name="input_2" type="data" label="Text file with host HLA genotypes"/>
+		<param name="input_3" type="select" label="Gene name" multiple="true">
+			<option value="Gag">gag</option>
+                        <option value="Nef">nef</option>
+                        <option value="Pol">pol</option>
+		</param>
+		<param name="rsp" type="integer" value='0' label="Starting position of your sequence(s) relative to the HIV genome"
+	        help = "Indexes from zero, so '0' indicates that your seqs start at the first base of the HIV genome"/>
+		<param name="rep" type= "integer" value='0' label="Ending position of your sequence(s) relative to the START of the HIV genome"
+			help = "Indexes from zero, so '0' indicates (non-sensically) that your seqs end at the first base of the HIV genome"/>
+
+	</inputs>
+	<outputs>
+		<data format="txt" name="output_1" type="data" label="Predicted epitope mean similarity scores" />
+		<data format="txt" name="output_2" type="data" label="Predicted epitope sites per HLAgenotype"/>
+	</outputs>
+
+	<help>
+	
+Searches for LANL epitopes from the first sequence in the alignment (e.g., could be a vaccine_insert or reference). An epitope is assumed if the reference sequence peptide has a 70% minimum identity to a LANL epitope. Predictions are restricted to user-provided HLA genotypes. For each sequence in the rest of the alignment (sequence names should correspond to host HLA genotypes given), the mean similarity to the reference sequence at the predicted epitopes specific to the host genotypes is calculated using the HIVbetween amino acid similarity matrix. Outputs from different alignments can be compared using non-parametric analogs of the t-test.
+
+**Inputs**
+
+* Tab-delimited amino acid alignment
+
+* A tab-delimited text file with HLA genotypes corresponding to the sequences in the alignment
+
+* Select the HIV gene for your alignment
+
+**Outputs**
+
+* A text file with mean epitope similarity scores for each sequence
+
+* A text file with a list of predicted epitope sites for each HLA genotype
+
+	</help>
+</tool>
+

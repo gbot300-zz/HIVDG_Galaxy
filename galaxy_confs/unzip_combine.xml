@@ -1,0 +1,28 @@
+<tool id="unzip_and_concatenate_files" name="Unzip and concatenate">
+	<description>fasta files</description>
+	<command interpreter="python">unzip_combine.py $input $output</command>
+	<inputs>
+		<param format="zip" name="input" type="data" label="zip archive with fasta files"/>
+	</inputs>
+	<outputs>
+		<data format="fasta" name="output" type="data" label="All_sequences_file"/>
+	</outputs>
+
+	<help>
+Decompresses a zip archive and concatenates all fasta files into one alignment 
+(NB* avoid spaces in your archive and folder names)
+
+**Inputs**
+
+A zip archive
+TO UPLOAD YOUR ZIP ARCHIVE use: 'Upload File' under the 'UCT CBIO Tools' tab and select the 'zip archive' File format.
+
+-----
+
+**Outputs**	
+
+One fasta alignment file with all the sequences
+
+	</help>
+</tool>
+

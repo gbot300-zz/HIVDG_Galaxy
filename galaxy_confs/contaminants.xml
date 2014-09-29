@@ -1,0 +1,44 @@
+<tool id="check_for_sequence_contaminants" name="Sequence Contaminants">
+	<description>.</description>
+	<command interpreter="python">contaminants.py $input_1 $input_2 $output</command>
+	<inputs>
+		<param format="fasta" name="input_1" type="data" label="New sequence alignment fasta file"/>
+                <param name="input_2" type="select" label="Gene name" multiple="true">
+                        <option value="gag">gag</option>
+                        <option value="nef">nef</option>
+                        <option value="pol">pol</option>
+                        <option value="env">env</option>
+                        <option value="tat">tat</option>
+                        <option value="vif">vif</option>
+                        <option value="vpu">vpu</option>
+                        <option value="vpr">vpr</option>
+			<option value="rev">rev</option>
+                </param>
+	</inputs>
+	<outputs>
+		<data format="txt" name="output" type="data" label="List of contaminants"/>
+
+	</outputs>
+	<test>
+		<param name="input_1" value="contamtest.fas" />
+		<output name="output" value="contaminantsOUT.txt" />
+	</test>
+
+	<help>
+Compares newly generated sequences with existing ones located on the gdrive in order to identify possible contaminants. A Hamming distance less than 2% is assumed to indicate contamination. 
+
+**Inputs**
+
+**Fasta sequence alignment**
+
+**Gene name either of gag nef pol env pol tat rev vif vpu vpr**
+
+-----
+
+**Outputs**	
+
+**A text file listing sequences which are more than 98% identical**
+
+	</help>
+</tool>
+

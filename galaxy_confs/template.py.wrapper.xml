@@ -1,0 +1,81 @@
+<tool id=""  name="">
+
+	<description> </description>
+
+	<command>
+		/opt/exp_soft/galaxy-tools/custom_tools/galaxy_confs/XXX.py.wrapper.py
+
+		## req input
+
+		#if $reads_format.reads == "fasta":
+			--fa $reads_fasta
+		#else:
+			--fq $reads_fastq
+		#end if
+
+		--opt1 $var1
+
+	</command>
+	
+	<inputs>
+		<param name="pre" type="text" label="Enter PRE sequence"
+			help="The sequence string preceding th motif of interest"/>
+
+		<conditional name="reads_format">
+			<param name="reads" type="select" label="Reads format"
+									help="Select whether reads are in FASTA or FASTQ format">
+				<option value="fasta">FastA</option>
+				<option value="fastq">FastQ</option>
+			</param>
+			<when value="fasta">
+				<param name="reads_fasta" type="data" format="fasta" label="Select reads FASTA file" />
+			</when>
+			<when value="fastq">
+				<param name="reads_fastq" type="data" format="fastq" label="Select reads FASTQ file" />
+			</when>
+		</conditional>
+	
+	</inputs>
+
+	<outputs>
+
+		<data format="fasta"      name = "consensus_sequencesA"        label="${tool.name} on ${on_string}: Consensus sequences FASTA"
+			from_work_dir= "consensus_sequences.fasta">
+			<filter>(consensus['wants_consensus'] == 'Yes' )</filter> <!--  and reads_format['reads'] == 'fasta -->
+		</data>
+
+		<data format="zip"		name = "binnedzip" label="${tool.name} on ${on_string}: Intermediate bins ZIP"
+			from_work_dir= "binned.zip">
+			<filter>(dump['wants_dump'] == 'Yes')</filter>
+		</data>
+
+		<data format="txt"		name = "log" label="${tool.name} on ${on_string}: Log File TXT"
+			from_work_dir = "log.txt"/>
+
+	</outputs>
+
+	<help>
+	</help>
+
+</tool>
+
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

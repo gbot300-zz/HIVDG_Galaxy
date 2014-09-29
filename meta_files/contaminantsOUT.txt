@@ -1,0 +1,10 @@
+Sequences with =>98% similarity i.e., Hamming distance <= 0.02, are assumed to be possible contaminants
+
+
+The new sequence 69_2_00wk5 has hamming distance = 0.00740192450037 from sequence 69_2_04wk10 in /home/nobubelo/g-drive/vir_diversity/all_sequences/gag/Daniel/69+aligned.fas
+
+The new sequence 69_2_00wk5 has hamming distance = 0.0 from sequence 69_2_00wk5 in /home/nobubelo/g-drive/vir_diversity/all_sequences/gag/Daniel/69+aligned.fas
+
+The new sequence 69_2_00wk5 has hamming distance = 0.0 from sequence 69_2_00wk5 in /home/nobubelo/g-drive/vir_diversity/all_sequences/gag/Roman/roman all samples 2009yyyyyyyy.fas
+
+The new sequence 69_2_00wk5 has hamming distance = 0.00740192450037 from sequence 69_2_04wk10 in /home/nobubelo/g-drive/vir_diversity/all_sequences/gag/Roman/roman all samples 2009yyyyyyyy.fas

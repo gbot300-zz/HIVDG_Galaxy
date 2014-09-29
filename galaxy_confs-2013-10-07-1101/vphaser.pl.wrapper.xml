@@ -1,0 +1,48 @@
+<tool id="vphaser1" name="Call variants">
+
+    <description>on 454 data using V-Phaser</description>
+
+    <command>
+        vphaser.pl.wrapper.py
+        -i             $input_qlx
+        XXX_calls.txt
+	XXX_model.txt
+	XXX_out.txt
+	XXX_snp.txt
+    <!-- perl ../vphaser.pl -i rcVTest_final.qlx -o vp_VTest -->
+
+    </command>
+
+    <inputs>
+        <param name="input_qlx" type="data" format="qlx" label="Select QLX input file (RC454 output)"      />
+   </inputs>
+
+   <outputs> 
+       <data format="txt" name= "out_calls" label="${tool.name} on ${on_string}: Calls" from_work_dir="XXX_calls.txt"    />
+       <data format="txt" name= "out_model" label="${tool.name} on ${on_string}: Model" from_work_dir="XXX_model.txt"    />
+       <data format="txt" name= "out_out" label="${tool.name} on ${on_string}: Out"  	from_work_dir="XXX_out.txt"    />
+       <data format="txt" name= "out_snp" label="${tool.name} on ${on_string}: SNP"  	from_work_dir="XXX_snp.txt"    />
+
+   </outputs>
+
+<help>
+Calls variants in 454 Alignments in preparation for V-Profiler.
+
+V-Phaser is a tool to call variants in mixed populations from ultra-deep sequence data.  V-Phaser combines information regarding the covariation (i.e. phasing) between observed variants to increase sensitivity and an expectation maximization algorithm that iteratively recalibrates base quality scores to increase specificity. V-Phaser should be run to generate input for V-Profiler.
+
+V-Phaser generates 4 main output files:
+
+a) xyz_calls.txt
+This file contains a list of which variants are accepted for each position. At each position in the genome either a 0 or 1 is noted for each of the 4 bases as well as Deletion or Insertion. A 1 means that this variant base or indel is accepted at this position by v-phaser (it could be because it is the dominant call or a variant seen frequently enough). This file is required as an input for v-profiler.
+
+b) xyz_model.txt
+This file contains details about the model and how it determined which calls it made at each position. It is usually not necessary to look at unless you have reasons to believe there is something wrong in the results.
+
+c) xyz_out.txt
+This file contains details about what was observed at each position, what the dominant call was, and how many times you counted each other base or indel. Note that this is not the main nucleotide frequency table, which is obtained through v-profiler after adding additional filtering and removing erroneous calls.
+
+d) xyz_snp.txt
+This file contains details about how each variant was called (variant or error) at each step of the analysis as well as how it was accepted (through pileup or phase) and what the sensitivity was. The final step in the file is what the final calls are.
+</help>
+</tool>
+

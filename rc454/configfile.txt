@@ -1,0 +1,15 @@
+# Enter path for the perl scripts (runMosaik.pl, rc454.pl, vphaser.pl, vprofiler.pl, convertPos.pl),
+# Mosaik (MosaikBuild, MosaikAligner, MosaikSort, MosaikText) and Muscle version 3.8
+# between the quotation marks. The script path is mandatory for configPaths.pl to work, others can be left
+# empty if the paths to the programs are in your environment variables.
+
+scriptpath = '/home/gbotha/galaxy-dist/tools/custom_tools/rc454'
+mosaikpath = ''
+mosaik1path = ''
+musclepath = ''
+perlpath = ''
+Rpath = ''
+samtoolspath = ''
+mosaiknetworkpath = '/home/gbotha/galaxy-dist/tools/custom_tools/mosaik-2.0/src/networkFile/'
+
+

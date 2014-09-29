@@ -1,0 +1,212 @@
+<tool id="runRC454" name="RC454 ">
+
+    <description>alignment cleaner for 454 data</description>
+
+    <command>
+        rc454.pl.wrapper.py
+
+	## required input
+        $reads_qlx
+	$reads_fasta
+        $reads_qual
+        $ref_fasta
+
+	## Settings if non-default
+        #if $params.settingsType == "full":
+		--fullSettings	1
+		--minhomosize 	$params.minhomosize
+		--nqvalue	$params.nqvalue
+		--nocafie	$params.nocafie
+		--noorf		$params.noorf
+		<!-- these options are available in the documentation, but are not in the actual rc454.pl script. I've left them out.
+		nqsmainqual	$params.nqsmainqual
+		nqsareaqual	$params.nqsareaqual -->
+		--nqssize	$params.nqssize
+		--details	$params.details
+		--slicesize	$params.slicesize
+		--gap3window	$params.gap3window
+		--minpctvar	$params.minpctvar
+		--minnbvar	$params.minnbvar
+		#if $params.primerInputs.askPrimers =="Yes":
+			--askPrimers	1
+			--primers	$params.primerInputs.primers
+			--primerbuffer	$params.primerInputs.primerbuffer
+		#else
+			--askPrimers	0
+		#end if
+		#if $params.geneInputs.askGenes == "Yes":
+			--askGenes	1
+			--genelist	$params.geneInputs.genelist
+		#else
+			--askGenes	0
+		#end if
+	#else
+		--fullSettings 0
+	#end if
+	
+<!--	-out_fasta	$out_fasta
+	-out_qual	$out_qual
+        -out_bam        $out_bam
+        -out_sam        $out_sam
+        -out_txt        $out_txt
+        -out_qlx        $out_qlx -->
+    </command>
+
+    <inputs>
+	<param name="reads_qlx"		type="data" format="qlx"   label="Select reads QLX file (Mosaik output)" />
+        <param name="reads_fasta"       type="data" format="fasta" label="Select reads fasta file"      />
+        <param name="reads_qual"        type="data" format="qual"  label="Select reads quality file"    />
+        <param name="ref_fasta"         type="data" format="fasta" label="Select consensus fasta file"/>
+
+       <conditional name="params">
+            <param name="settingsType" type="select" label="Default / Advanced Settings" 
+                        help="Select whether you would like to use default or customised settings.">
+              <option value="preSet">Use defaults</option>
+              <option value="full">Show full parameter options</option>
+            </param>
+            <when value="preSet" />
+            <when value="full">
+            <!-- Full/advanced params. -->
+
+		<param name="minhomosize" type="integer" label="minhomosize - Minimum homopolymer size" value="2"
+				help=" Minimum size of an homopolymer to be considered as such in the homopolymer correction step. Default is 2, which means that a case like: CAAT vs CA-T would get corrected."/>
+		<param name="nqvalue" type="integer" value="1"
+			label="nqvalue - Quality value for inserted bases that in order for them not to influence adjacent bases' NQS score."			     help="Q-Score given to a N that gets added by the script in the quality file. Default is 1.   The important part here is that all bases that have the nqvalue will get ignored when looking at the neighborhood of the base in the NQS filter. This is to prevent an inserted N from ‘flagging down’ all adjacent bases. The score 1 is chosen by default because usually no base gets assigned a score this low." />	
+
+		<param name="nocafie" type="select" label="nocafie - Correct for CAFIE errors?">
+			<option value="0">Yes</option>
+			<option value="1">No</option>
+		</param>
+
+                <param name="noorf" type="select" label="noorf - Correct for indels that break ORF's?">
+                <option value="0">Yes</option>
+                <option value="1">No</option>
+                </param>
+
+
+		<!--<param name="nqsmainqual" type="integer" value="20" 
+			label="nqsmainqual - Minimum quality required for a base to pass the NQS filter:" />
+		<param name="nqsareaqual" type="integer" value="15" 
+			label="nqsareaqual - Minimum quality required for the neighborhood bases to pass NQS:"/> -->
+
+		<param name="nqssize" type="integer" value="5"
+                        label="nqssize - Size of the neighborhood on each side of the central base that is considered for the NQS filter" />
+
+		<param name="details" type="select" label="details - Output intermediate data?"
+			help="If you use the –details option, you will also get a list of all rejected reads and quals, and a set of fasta, qual and qlx files for each step, named _ie.qlx/fasta/qual after the CAFIE correction step and _homo.qlx/fasta/qual after the homopolymer correction step. A file named _changes.txt will also be created, containing a list of all corrections done to each read over the course of the program." >
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+		</param>
+		
+		<param name="slicesize" type="integer" value="5" label="slicesize - Number of variant neigbour bases to evaluate:"
+			help="This is the number of bases on either side of a variant that are monitored by the algorithm to see if the sequence remains the same" />
+
+		<param name="gap3window" type="integer" value="10" label="gap3window - Size of the window to determine if a gap can form a multiple of 3 when joined with others." help="The window is the number of aligned bases (including gaps) that will be looked at on each side of the central gap being analyzed."/>
+
+		<conditional name="primerInputs">
+			<param name="askPrimers" type="select" label="Would you like to provide a file specifying primer positions in order to remove primer sequences from reads?" help="If a file is provided, every read that starts inside the primer will be trimmed to remove the primer sequence. This is to prevent bias that could be caused by sequencing the primer sequence." >
+				<option value="No">No</option>
+				<option value="Yes">Yes</option>
+			</param>
+			<when value="No"/>
+			<when value="Yes">
+				<param name="primers" type="data" format="text" label="primers - Specify primer position file, similar format to gene list files. See INPUTS section below for details" /> 
+
+				<param name="primerbuffer" type="integer"  value="2" label="primerbuffer - Primer Buffer?" 
+					help="The primer buffer will be added to the positions of the primer such as any read starting within the primer position OR the primer position +/- primer buffer will be trimmed. This is to make up for occasional issues where you can have misalignments or homopolymer miscalls at the end of the primer sequence that could modify its position." />
+
+
+			</when> <!-- Yes -->
+		</conditional> <!-- primerInputs -->
+
+		<param name="minpctvar" type="float" value="0.25" label="minpctvar - Minimum percentage of the reads that must have a variant (including indels) in order for this particular variant to be ignored when correcting for nonhomopolymer errors."
+			help="The number of times you see the variant must exceed both the minpctvar and minnbvar values in order to pass correction (if you want to ignore one or the other, simply set its value to 0)." />
+
+		<param name="minnbvar" type="integer" value="5" label="minnbvar - Minimum amount of reads that must have a variant (including indels) in order for this particular variant to be ignored when correcting for non-homopolymer errors."
+			help="The number of times you see the variant must exceed both the minpctvar and minnbvar values in order to pass correction (if you want to ignore one or the other, simply set its value to 0)." />
+
+		<conditional name="geneInputs">
+			<param name="askGenes" type="select" label="Would you like to provide a file specifying gene positions in order to prevent gaps from breaking the reading frame?" help="If you supply a gene list, the corrections to prevent gaps from breaking the reading frame will only be applied within the genes listed and will ignore the rest of the genome. NOTE that this function can break due to the qual file not being adjusted when reads are shortened - this is a Broad bug and will be fixed in future releases." >
+				<option value="No">No</option>
+				<option value="Yes">Yes</option>
+			</param>
+			<when value="No"/>
+			<when value="Yes">
+				<param name="genelist" type="data" format="text" label="genelist - Specify gene position file. See INPUTS section below for details" />
+			</when> <!-- Yes -->
+		</conditional> <!-- geneInputs -->
+
+	</when> <!-- full -->
+    </conditional> <!-- params -->
+
+   </inputs>
+
+   <outputs>
+	<data format="fasta"	name = "out_fasta"	label="${tool.name} on ${on_string}: FASTA output" 
+		from_work_dir= "rc454_out_cleaned.fasta"	/>
+	<data format="qual"	name = "out_qual"	label="${tool.name} on ${on_string}: QUAL output"
+		from_work_dir= "rc454_out_cleaned.qual"      /> 
+       	<data format="bam" 	name = "out_bam" 	label="${tool.name} on ${on_string}: BAM output"
+		from_work_dir= "rc454_out_final.bam"      />
+	<data format="sam" 	name = "out_sam" 	label="${tool.name} on ${on_string}: SAM output" 
+		from_work_dir= "rc454_out_final.sam"     />
+       	<data format="txt" 	name = "out_txt" 	label="${tool.name} on ${on_string}: Unmapped Reads"  
+		from_work_dir= "rc454_out_final_unmappedIDs.txt"        >
+		<filter>((params['settingsType'] == 'full' and params['noorf'] == '0') or (params['settingsType'] == 'preSet'))</filter>
+	</data>
+	<data format="txt"      name = "out_homo_txt"        label="${tool.name} on ${on_string}: Unmapped Reads (Homopolymer step only)"  
+                from_work_dir= "rc454_out_homo_unmappedIDs.txt"        >
+                <filter>(params['settingsType'] == 'full' and (params['noorf'] == '1' and params['details'] == '0'))</filter>
+        </data>
+	<data format="zip"      name = "out_details_zip"        label="${tool.name} on ${on_string}: Intermediate files ZIP"  
+                from_work_dir= "rc454_out_details.zip"        >
+                <filter>(params['settingsType'] == 'full' and params['details'] == '1')</filter>
+        </data>
+       	<data format="qlx" 	name = "out_qlx" 	label="${tool.name} on ${on_string}: QLX output" 
+		from_work_dir= "rc454_out_final.qlx"     />
+   </outputs>
+
+ <help>
+
+**RC454 Overview**
+
+RC454_ (ReadClean454) takes a set of 454 read and quality files as well as a consensus assembly for those reads and corrects for known 454 error modes such as homopolymer indels and carry forward/incomplete extension (CAFIE). It will also correct for any indel that breaks the reading frame, unless it occurs in more than 25% of the reads. Since the algorithm is aggressive in correcting for errors (not allowing suspicious variants in - rather than capturing the maximum number of variants possible), it is important to align the reads to their own assembly rather than to an external reference to prevent misalignments as much as possible. 
+
+RC454 is part of the Broad_ Viral Analysis Tools spectrum.
+
+.. class:: infomark
+
+RC454 uses MOSAIK output to run and as such it is required that you align your reads to their consensus sequence using MOSAIK before running RC454.
+
+
+.. _RC454: http://www.broadinstitute.org/scientific-community/science/projects/viral-genomics/rc454 
+.. _Broad: http://www.broadinstitute.org/scientific-community/science/projects/viral-genomics/viral-genomics-analysis-software
+
+------
+
+**Inputs**
+
+ - QLX file (MOSAIK output) [Format(s): QLX]
+ - Reads file           [Format(s): FASTA]
+ - Quality file         [Format(s): QUAL454 / QUAL]
+ - Reference file       [Format(s): FASTA]
+
+------
+
+**Outputs**
+
+ - FASTA Output: Reads file for cleaned reads							[Format(s): FASTA]
+ - QUAL Output: Quality file for cleaned reads         						[Format(s): QUAL454 / QUAL]
+ - SAM Output: SAM Alignment file (human readable)                                              [Format(s): SAM_]
+ - BAM Output: BAM Alignment file (machine readable)                                            [Format(s): BAM_]
+ - Unmapped Reads: Text file containing names of reads there were not mapped			[Format(s): Text]
+ - QLX Output: (Broad_ Inst.)-specfic Fasta-like file containing read alignment.		[Format(s): QLX]
+
+.. _SAM: http://genome.sph.umich.edu/wiki/SAM
+.. _BAM: http://genome.sph.umich.edu/wiki/SAM
+                                                        
+------
+
+ </help>
+</tool>
+

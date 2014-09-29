@@ -1,0 +1,73 @@
+<tool id="FastTree" name="FASTTREE">
+
+    <description>phylogenetic tree builder</description>
+
+    <command>
+        FastTreeMP  -quiet -quote $al_type $input_alignment &gt; $output
+    </command>
+
+    <inputs>
+	<param name="input_alignment"   type="data" format="fasta" label="Select Fasta alignment file" />
+	<param name="al_type" type="select" label="Please select type of aligment">
+            <option value="-nt">Nucleotide</option>
+            <option value="">Protein</option>
+        </param>   
+    </inputs>
+
+   <outputs>
+       <data format="text" name="output" />
+   </outputs>
+  <help>
+
+**FASTTREE Overview**
+
+FASTTREE_ infers approximately-maximum-likelihood phylogenetic trees from alignments of nucleotide or protein sequences. FastTree can handle alignments with up to a million of sequences in a reasonable amount of time and memory. For large alignments, FastTree is 100-1,000 times faster than PhyML 3.0 or RAxML 7.
+
+.. _FASTTREE: http://www.microbesonline.org/fasttree/
+
+------
+
+**Inputs**
+
+ - Alignmnt file [FASTA, PHYLIP]
+ - Alignment Type [Setting]
+
+Note below from the FastTree documentation_ page:
+
+1. If the sequences' names are not unique, then FastTree returns an error.
+
+2. Please make sure that the none of the characters ":,()" appear in your sequence names or you will not be able to parse the resulting tree.
+
+3. Fasta format:
+
+3.1 By default, any text after the first space on a description line will be treated as a comment and will be ignored. For example, the line ">Ecoli arcA protein" is treated as introducing a sequence named "Ecoli". Use the -quote option to change this behavior, or replace spaces with underscores.
+
+3.2 Each description line must be under 5,000 characters long, but sequence lines can be any length.
+
+4. Phylip interleaved format:
+
+4.1 FastTree allows names of any length in phylip files and requires space(s) between the sequence's name and the sequence.
+
+4.2 If you repeat the names of the sequences in succeeding blocks, then the names must match the first block.
+
+4.3 If you do not repeat the names of the sequences in succeeding blocks, then those lines must begin with space(s).
+
+4.4 Each line must be less than 5,000 characters. Longer alignments must be broken up into blocks. (Or use FASTA format: FastTree allows arbitrarily long sequence lines in FASTA format).
+
+4.5 FastTree can read multiple alignments in a single file in phylip format, such as resampled alignments from SEQBOOT, but you need to tell it how many alignments to expect with the -n option.
+
+.. _documentation: http://www.microbesonline.org/fasttree/
+
+------
+
+**Outputs**
+
+ - Tree output file [NEWICK_ format]
+
+.. _NEWICK: http://en.wikipedia.org/wiki/Newick_format
+
+------
+
+  </help>
+</tool>
+

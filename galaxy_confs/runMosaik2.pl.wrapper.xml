@@ -1,0 +1,235 @@
+<tool id="runMosaik" name="Mosaik Alignment">
+  
+    <description>Aligns reads to consensus (Precursor to RC454)</description>
+  
+    <command>
+        runMosaik2.pl.wrapper.py 
+
+	## Sequencing tech used
+	--st $st
+	
+	## reads single/paired and fastq / fasta+qual
+	#if $singlePaired.sPaired == "single":
+		#if $singlePaired.inputFormat.iFormat == "fastq":
+			--fq 	$reads_fastq
+		#else
+			--fa 	$reads_fasta
+			--qual 	$reads_qual
+		#end if
+	#elif $singlePaired.sPaired == "paired":
+		#if $singlePaired.inputFormat.iFormat == "fastq":
+			--fq 	$reads_fastq
+			--fq2 	$reads2_fastq
+		#else
+			--fa 	$reads_fasta
+                        --qual 	$reads_qual
+			--fa2 	$reads2_fasta
+                        --qual2 	$reads2_qual
+		#end if
+	#end if
+	
+	## ref sequence in fasta
+	--ref            $ref_fasta
+
+	<!-- ## defaults for 454 and illumina if not using advanced settings
+	#if (($params.settingsType == "preSet") and ($st == "illumina")):
+		-paramillu
+	#elif (($params.settingsType == "preSet") and ($st == "454")):
+		-param454
+	#end if -->
+
+	## Settings if non-default
+	#if $params.settingsType == "full":
+		--hs 	$params.hs
+		--act 	$params.act
+		--mmp	$params.mmp
+		--minp	$params.minp
+		--ms	$params.ms
+		--mms	$params.mms
+		--gop	$params.gop
+		--hgop	$params.hgop
+		--gep	$params.gep
+		--nqsmq	$params.nqsmq
+		--nqsaq	$params.nqsaq
+		--nqssize $params.nqssize
+		--bw	$params.bw
+		--nqvalue $params.nqvalue
+		--m	$params.m
+		#if $singlePaired.sPaired == "paired":
+			--mfl $params.mfl
+		#end if
+	#end if
+
+<!--	## qlx output is required for BROAD tools
+	-qlx
+	-fa 		$reads_fasta 
+	-qual		$reads_qual 
+	-ref 		$ref_fasta
+        runMos_out.sam
+        runMos_out.bam
+        runMos_out.txt
+        runMos_out.qlx -->
+	<!-- -out_bam 	$out_bam
+	-out_sam	$out_sam
+	-out_qlx	$out_qlx
+	-out_txt	$out_txt -->
+	<!-- runMosaik2.pl -fa $fasta_data -qual $qual_data -ref $ref_seq -o $output -qlx -param454 -->
+    </command>
+
+
+    
+    <inputs>    
+	<param name="st" type="select" label=" - st - Sequencing Technology" help="Note that the recommended settings for this technology will be used when running Mosaik with the default parameters." >
+	  <option selected="true" value="illumina">Illumina</option>
+	  <option value="454">454</option>
+	  <option value="helicos">Helicos</option> 
+	  <option value="solid">Solid</option>
+	  <option value="sanger">Sanger</option>
+	</param>
+
+    	<conditional name="singlePaired">
+            <param name="sPaired" type="select" label="Are the reads mate-paired?">
+              <option value="single">Single-end</option>
+              <option value="paired">Paired-end</option>
+            </param>
+		<when value="single">
+			<conditional name="inputFormat">
+			    <param name="iFormat" type="select" label="Input reads as FASTQ file or FASTA + QUAL files?">
+				<option value="fastq">FASTQ</option>
+				<option value="fastaqual">FASTA + QUAL</option>
+			    </param>
+				<when value="fastq">
+					<param name="reads_fastq" type="data" format="fastq" label="Select reads fastq file"/>
+				</when>
+				<when value="fastaqual">
+					<param name="reads_fasta" type="data" format="fasta" label="Select reads fasta file"/>
+					<param name="reads_qual" type="data" format="qual" label="Select reads qual file"/>
+				</when>
+			</conditional> <!-- inputFormat (single)-->
+		</when>
+		<when value="paired">
+			<conditional name="inputFormat">
+                            <param name="iFormat" type="select" label="Input reads as FASTQ file or FASTA + QUAL files?">
+                                <option value="fastq">FASTQ</option>
+                                <option value="fastaqual">FASTA + QUAL</option>
+                            </param>
+                                <when value="fastq">
+                                        <param name="reads_fastq" type="data" format="fastq" label="Select first mates reads fastq file"/>
+                                        <param name="reads2_fastq" type="data" format="fastq" label="Select second mates reads fastq file"/>
+                                </when>
+                                <when value="fastaqual">
+                                        <param name="reads_fasta" type="data" format="fasta" label="Select first mates reads fasta file"/>
+                                        <param name="reads_qual" type="data" format="qual" label="Select first mates reads qual file"/>
+                                        <param name="reads2_fasta" type="data" format="fasta" label="Select second mates reads fasta file"/>
+                                        <param name="reads2_qual" type="data" format="qual" label="Select second mates reads qual file"/>
+                                </when>
+			</conditional> <!-- inputFormat (paired)-->
+		</when>
+	</conditional> <!-- singlePaired -->
+       	
+	<param name="ref_fasta" type="data" format="fasta" label="Select consensus fasta file"/>
+
+	<conditional name="params">
+            <param name="settingsType" type="select" label="Default / Advanced Settings" 
+			help="Select whether you would like to use default or customised settings.">
+              <option value="preSet">Use defaults</option>
+              <option value="full">Show full parameter options</option>
+            </param>
+            <when value="preSet" />
+            <when value="full">
+            <!-- Full/advanced params. -->
+		<param name="hs" type="integer" label=" - hs - hash size" value="10"
+			help="Hash size for Mosaik alignment. See the Mosaik documentation for more details."/>
+		<param name="act" type="integer" label=" - act - allignment candidate threshold" value="15"
+			help="Alignment candidate threshold for Mosaik alignment. See the documentation for more details."/>
+		<param name="mmp" type="float" label=" - mmp - maximum mismatch percentage" value="0.25" 
+			help="NB enter in fraction, i.e. enter 0.25 for 25%"/>
+		<param name="minp" type="float" label=" - minp - minimum read alignment" value="0.25"
+			help="Minimum percentage of a read that needs to be aligned for the read to be kept. NB enter in fraction, i.e. enter 0.25 for 25%"/>
+		<param name="ms" type="integer" label=" - ms - Match score for Smith-Waterman Algorithm" value="10" />
+		<param name="mms" type="integer" label=" - mms - Mismatch penalty for Smith-Waterman Algorithm" value="-9" />
+		<param name="gop" type="float" label=" - gop - Gap opening penalty for the SW algorithm" value="40" />
+		<param name="hgop" type="float" label=" - hgop - Penalty for opening a gap in an homopolymer for the SW algorithm" value="20" />
+		<param name="gep" type="float" label=" - gep - Gap extending penalty for the SW algorithm" value="10" />
+		<param name="nqsmq" type="integer" label=" - nqsmq - Minimum quality required for a base to pass the NQS filter" value="20" />
+		<param name="nqsaq" type="integer" label=" - nqsaq - Minimum quality required for the neighborhood bases to pass NQS" value="15" />
+		<param name="nqssize" type="integer" value="5"
+			label=" -nqssize - Size of the neighborhood on each side of the central base that is considered for the NQS filter" />	
+		<param name="bw" type="integer" label=" - bw - banded Smith-Waterman bandwith" value="29"
+				help="As the bandwidth is reduced, alignment performance will improve - especially in longer Roche 454 or Sanger capillary reads - whilst higher bandwidth values will result in faster alignments. If the bandwidth is reduced too much, alignment artifacts may result. Recommeded settings: Illumina (36 - 43 bp) -bw=13; Illumina (44 - 63 bp) -bw=17; Illumina (63+ bp) -bw=29; Roche 454 (Titanium) -bw=51"/>
+		<param name="nqvalue" type="integer" label=" - nqvalue - Quality value for inserted bases that in order for them not to influence adjacent bases' NQS score."
+			value="1" help="Q-Score given to a N that gets added by the script in the quality file. Default is 1.	The important part here is that all bases that have the nqvalue will get ignored when looking at the neighborhood of the base in the NQS filter. This is to prevent an inserted N from ‘flagging down’ all adjacent bases. The score 1 is chosen by default because usually no base gets assigned a score this low." />
+		<param name="m" type="select" label=" - m - Alignment type" help="Unique only keeps uniquely aligned reads. All keeps all (duh). For paired end reads it is recommended to use all as one mate might align uniquely and the other not. See Mosaik documentation for further details." >	
+                  <option selected="true" value="unique">Unique</option>
+                  <option value="all">All</option>
+		</param>
+		<param name="mfl" type="integer" value="600" label=" - mfl - median fragment length" help="Only required for PAIRED reads. Specifies the size of the region around an aligned mate that needs to be searched for a second mate alignment" />
+		
+	     </when> <!-- full -->
+	</conditional> <!-- params -->
+   </inputs>
+
+
+
+  
+   <outputs>  
+       <data format="sam" name= "out_sam" label="${tool.name} on ${on_string}: SAM output" 
+		from_work_dir= "runMos_out.sam"	/>
+       <data format="bam" name= "out_bam" label="${tool.name} on ${on_string}: BAM output"  
+		from_work_dir= "runMos_out.bam"	/>
+       <data format="txt" name= "out_txt" label="${tool.name} on ${on_string}: Unmapped Reads"
+		from_work_dir= "runMos_out.txt"  	/>
+       <data format="qlx" name= "out_qlx" label="${tool.name} on ${on_string}: QLX output"
+		from_work_dir= "runMos_out.qlx"    	/> 
+   </outputs>
+ 
+  <help>
+
+**Mosaik Overview**
+
+MOSAIK_ is a reference-guided assembler. Unlike many current read aligners, MOSAIK produces gapped alignments using the Smith-Waterman algorithm.
+
+MOSAIK supports multiple sequencing technologies. In addition to legacy technologies such as Sanger capillary sequencing, our program supports next generation technologies such as Roche 454, Illumina, AB SOLiD, and experimental support for the Helicos Heliscope. 
+
+.. class:: infomark
+
+*The output generated by MOSAIK is used in the RC454 alignment cleaning algorithm and as such, assembling your reads using MOSAIK is a precursor to using RC454.*
+
+.. _MOSAIK: http://code.google.com/p/mosaik-aligner/
+.. _Broad: http://www.broadinstitute.org/scientific-community/science/projects/viral-genomics/rc454
+
+------
+
+**Inputs**
+
+ - Reads file           [Format(s): FASTA]
+ - Quality file         [Format(s): QUAL454 / QUAL]
+ - Reference file       [Format(s): FASTA]
+
+.. class:: infomark
+
+*Note that when running Mosaik as part of RC454, a pre-determined Consensus sequence should be used as a reference. This is either obtained from the SANBI pipeline or by running AV454 (in development)*
+
+------
+
+**Outputs**
+
+ - SAM Output: SAM Alignment file (human readable)						[Format(s): SAM_]
+ - BAM Output: BAM Alignment file (machine readable)						[Format(s): BAM_]
+ - Unmapped Reads: Text file containing names of reads there were not mapped			[Format(s): Text]
+ - QLX Output: (Broad_ Inst.)-specfic Fasta-like file containing reads. Used as input for RC454	[Format(s): QLX] 
+
+.. _SAM: http://genome.sph.umich.edu/wiki/SAM
+.. _BAM: http://genome.sph.umich.edu/wiki/SAM
+.. _Broad: http://www.broadinstitute.org/scientific-community/science/projects/viral-genomics/rc454
+
+------
+
+**Defaults**
+
+.. class:: warningmark
+
+Note that MOSAIK runs under default settings at present. Setting of parameters is under development.
+
+  </help>
+</tool>
