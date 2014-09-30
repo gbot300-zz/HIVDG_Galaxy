@@ -9,6 +9,7 @@ Python wrapper for runMosaik2.pl file. The wrapper was required since the the Pe
 import os
 import subprocess
 import argparse
+import cfg as cfg
 
 # Define usage options using argparse library
 # compulsory args
@@ -54,7 +55,7 @@ dargs =  vars(args)
 
 # Perl file execution
 #cmd = '/usr/bin/perl /home/gbotha/galaxy-dist/tools/custom_tools/bin/runMosaik2.pl -fa %s -qual %s -ref %s -o runMos_out -qlx -param454' % (dargs['fa'], dargs['qual'], dargs['ref'])
-cmd = '/usr/bin/perl /opt/exp_soft/galaxy-tools/custom_tools/bin/runMosaik2.pl'
+cmd = '/usr/bin/perl %s/bin/runMosaik2.pl'i % (cfg.customToolsDir, )
 
 # seq tech
 cmd += ' -st %s ' % dargs['st']

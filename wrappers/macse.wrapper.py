@@ -15,6 +15,7 @@ import os
 import subprocess
 import sys
 import random
+import cfg as cfg
 
 import logging
 #logging = logging.getLogger('Logger')
@@ -44,7 +45,7 @@ logging.basicConfig(format= '%(asctime)-15s || %(levelname)s  >> %(message)s', d
 filename=logFilename, filemode='w', level=logging.INFO)
 #######################################################################################
 
-cmd = 'java -jar /opt/exp_soft/galaxy-tools/custom_tools/bin/macse_v1.01b.jar -prog alignSequences -out_AA macse_out_AA.fasta -out_NT macse_out_NT.fasta'
+cmd = 'java -jar %s/bin/macse_v1.01b.jar -prog alignSequences -out_AA macse_out_AA.fasta -out_NT macse_out_NT.fasta'% (cfg.customToolsDir,)
 for a in dargs:
 	if dargs[a]:
 		cmd += ' -%s %s ' % (a, dargs[a]) 

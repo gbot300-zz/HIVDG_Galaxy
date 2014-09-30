@@ -6,7 +6,33 @@ Author: Gordon
 
 Date 13 Dec 2013
 
+This tool sorts sequence reads by a specific sequence polymer in the sequence (usually denoted as the PID). It can be used to sort multiplexed reads by sample / patient / experiment etc.
+
+Essentially, the tool takes as input a pre-PID sequence (can be degenerate) and a post-PID sequence (can also be degenerate) and searches for these polymers in each read. The PID is then identified (if it is present) and the read is grouped with the other reads from that PID. 
+
+A consensus sequences is then generated from the reads in each PID bin.
+
+One is able to specify whether a sample of 1000 bins and their reads needs to be output to a zipped folder for QC purposes
 '''
+
+## TODO
+
+## 1. Presently, consensus sequences can be aligned as an option. This option should be removed to ensure more modularity.
+## 2. The script runs very slow due to high memory reqs - can be made much more memory efficient -> http://effbot.org/zone/wide-finder.htm
+
+## Below is an example of what the PID and PRE and POST strings will look like in a read.
+
+#V3 reverse primer sequence (in rev comp ie: as it should appear in the final merged file)
+
+#CAGGAGGGGAYCTAGAArTTACAACnnnnnnnnnCTGAGCGTGTGGCAAGGC
+
+#gene specific primer		PID		   universal primer site
+
+#V1 reverse primer sequence (in rev comp ie: as it should appear in the final merged file)
+
+#CACYTKAGAATCGCATAACCAGCTGGnnnnnnnnnCTGAGCGTGTGGCAAGGC
+
+#gene specific primer		PID		   universal primer site
 
 import os
 import subprocess
@@ -27,35 +53,6 @@ import logging
 
 import argparse
 parser = argparse.ArgumentParser(description = 'Cycles through a set of merged Illumina reads and identifies Primer IDs. New PIDs are compared to an existing set and if mismatched by only one base, the sequence is added to the existing PID')
-
-## TODO
-	## 1. INPUTS
-		## input file in fasta / fastq format (x)
-		## x bases before and x bases after primer, also primer length (x)
-		## patient, sample, region
-		## consensus creation should be an option
-	## 2. FUNCTIONS
-		## Find unique primers list (x)
-		## Calculate number of primers that differ by one base (as a check to see if this might be a problem)
-		## Create consensus sequence for each primer (x)
-						## Possible extensions here are 1) Vicuna, 2) Taking quals into account (averaging or something)
-		## cut Primer -->, keep seq up until primer 
-	## 3. Outputs
-		## if not consensus, zip file for all seqs in each bin identified
-		## if consensus, we want a file containing consensus sequence for each bin. Also output alignments for the most, 
-		## least and one in the middle bins
-
-#V3 reverse primer sequence (in rev comp ie: as it should appear in the final merged file)
-
-#CAGGAGGGGAYCTAGAArTTACAACnnnnnnnnnCTGAGCGTGTGGCAAGGC
-
-#gene specific primer		PID		   universal primer site
-
-#V1 reverse primer sequence (in rev comp ie: as it should appear in the final merged file)
-
-#CACYTKAGAATCGCATAACCAGCTGGnnnnnnnnnCTGAGCGTGTGGCAAGGC
-
-#gene specific primer		PID		   universal primer site
 
 ## Required input
 parser.add_argument('--fa', help='Merged reads in fasta format')
@@ -92,8 +89,15 @@ base_replacer = {
 		'T' : '[T|W|Y|K|B|D|H|N]'
 		}
 
+
+## FUNCTION DEFINITIONS
+
 def create_consensus(aligned_seqs, max_len):
-		''' This is an adaptation of a function written by Ram from SANBI. See "Make_Consensus.py" in the Seq2Res code '''
+''' 
+This is an adaptation of a function written by Ram from SANBI. See "Make_Consensus.py" in the Seq2Res code
+RETURNS:
+	Consensus sequence for a set of aligned reads
+'''
 		#max_len=len(consensus_list[0][1])
 		position_collection_box={}
 		consensus_sequence=""
@@ -123,7 +127,7 @@ def create_consensus(aligned_seqs, max_len):
 						base_to_add.append(key)
 			## if a list of candidates exists, look up the ambiguity character
 			if isinstance(base_to_add, list):
-				## hack here until we figure out what to do with gaps
+				## hack here until we figure out what to do with gaps. 
 				base_to_add = sorted([x.upper() for x in base_to_add])
 				if (len(base_to_add) == 2) and ('-' in base_to_add):
 					base_to_add = '-'
@@ -133,6 +137,7 @@ def create_consensus(aligned_seqs, max_len):
 						if x not in ['A', 'C', 'G', 'T']:
 							base_to_add.remove(x)
 					for key in maps.translator.keys():
+						base_to_add.sort()
 						if maps.translator[key] == base_to_add:
 							base_to_add = key
 
@@ -145,6 +150,11 @@ def create_consensus(aligned_seqs, max_len):
 		return consensus_sequence
 
 def build(fixed, vary, build_len):
+'''
+This function builds all possible patterns of length [build_len], from a sequence [vary], which may contain degenerate bases - hence the call to maps.translator. This creates all possible variants of a given PRE / POST input string w.r.t. degenaracy
+RETURNS:
+	all possible variants of a given length for a degenerate sequence string
+'''
 	for i in range(len(vary)):
 		fx = fixed[:]
 		for fix in fx:
@@ -156,6 +166,11 @@ def build(fixed, vary, build_len):
 	return builds
 
 def build_patterns(pres, pid, posts):
+'''
+Given a set of PRE patterns and POST patterns, this function tries to find all combinations of PRE and POST in a sequence in order to identify the PID. The base_replacer functionality enables one to match ACGT in the PRE / POST string to degenerate bases in the read.
+RETURNS:
+	all possible PRE-PID-POST pattern combinations for the given PRE, PID and POST patterns
+'''
 	patterns = []
 	for post in posts:
 		for pre in pres:
@@ -167,6 +182,12 @@ def build_patterns(pres, pid, posts):
 	return patterns
 
 def id_pids(seqs):
+'''
+Iterates through the reads and tries to identify PIDs. If a new one is found, the PID is added as a key to the unique_pids dictionary object and the read is stored under the PID. If the PID already exists, the read is added to the current reads under that PID. If no PID is identified the read is recorded in the no_pids list.
+RETURNS: 
+unique_pids dict object with upids as keys and all read names of reads in that upid bin.
+no_pids list of read names which contain no PID
+'''
 		for sname in seqs.keys():
 				#print sname
 				## first step is to identify the primer seq
@@ -191,6 +212,10 @@ def id_pids(seqs):
 		return unique_pids, no_pids
 
 def get_max_len(order, aligned_seqs):
+'''
+obtain the max length of all the reads for a given PID. This value is used during consensus genration
+RETURNS: max_len of reads integer value
+'''
 	max_len = 0
 	for seq in order:
 		#print len(aligned_seqs[seq]), max_len
@@ -200,6 +225,12 @@ def get_max_len(order, aligned_seqs):
 
 
 def align_and_consensus(con_keys, upids):
+'''
+For each unique PID, [upid], a file is created containing all the reads for that upid and the reads are aligned using mafft.
+A consensus sequence for each PID bin is then generated from the aligned reads in each bin.
+If the sample alignments option has been enabled, the first 1000 bins' reads alignments are kept and output as a zipped folder for QC purposes
+RETURNS: a disctionary object with consensus names as keys and consensus sequences as values 
+'''
 		con_seqs = {}
 		randy = str(random.randint(0,1000000))
 		if dargs['sample_alignments']:
@@ -209,7 +240,7 @@ def align_and_consensus(con_keys, upids):
 			samples = 1000
 		for upid in con_keys:
 			tmpnam		= 'tmp' + randy 
-			util.create_fasta(upids[upid], seqs, tmpnam)
+			util.create_fasta(upids[upid], seqs, tmpnam) #(read_names, reads, filename) essentially. 
 			mafftnam	= 'mafft_out_msa' + randy ## TODO remember when you change this ramics to change the dump aligns for nopids and opids too
 			subprocess.check_call("mafft --auto --quiet %s	> %s;" % (tmpnam, mafftnam), shell=True)
 			order, aligned_seqs = util.clean_seqs(mafftnam)
@@ -224,6 +255,9 @@ def align_and_consensus(con_keys, upids):
 		return con_seqs
 
 def create_fasta_custom(nams, seqs, wpath, s=None, e=None):
+'''
+Writes out sequences to a a file in fasta format. One is able to write only parts of the sequences using the 's' and 'e' options
+'''
 		with open(wpath, 'w') as w:
 				for nam in nams:
 						if s:
@@ -233,6 +267,9 @@ def create_fasta_custom(nams, seqs, wpath, s=None, e=None):
 
 
 def dump_bins_to_file(upids, seqs, quals=[]):
+'''
+outputs the reads for a number of unique PIDS into a file. This is used for QC purposes with the [sample_alignments] argument
+'''
 	# create_fastq(nams, seqs, quals, wpath, s=None, e=None):
 	bindir = "binned" + str(random.randint(0,100000))
 	os.mkdir(bindir)
@@ -252,6 +289,7 @@ def dump_bins_to_file(upids, seqs, quals=[]):
 if __name__ == "__main__":
 	logging.info("Reading in data...")
 
+	## used to specify whether the input file is in the old Sanger sequence format that splits reads over multiple new lines
 	if dargs['lines']:
 		read_seqs = util.clean_seqs_fixed_lines
 	else:
@@ -434,24 +472,6 @@ if __name__ == "__main__":
 	logging.info('moving LOG file')
 	subprocess.check_call('mv %s log.txt;' % (logFilename), shell=True)
 	logging.info('done...')
-
-#for key in bins.keys():
-#	odir = os.path.join(os.getcwd(), 'bins', key[0], key[1], key[2], key[3], key[4], key[0], key[5], key[6], key[7], key[8])
-#	util.ensure_dir_exists(odir)
-#	wpath = os.path.join(odir, key + '_sequences.fastq')
-#	util.create_fastq(bins[key], seqs, quals, wpath)
-#
-#for seq in no_primers:
-#	odir = os.path.join(os.getcwd(), 'bins', 'no_primers')
-#	util.ensure_dir_exists(odir)
-#	wpath = os.path.join(odir, 'no_primers_sequences.fastq')
-#	util.create_fastq(no_primers, seqs, quals, wpath)
-#
-#cmd = ' zip -r bins.zip bins  &> /dev/null;  '
-#
-##'vprofiler.pl -i input.txt -o Vpro -noendvariant=10 -nt -codon -haplo -haploseq '
-#subprocess.check_call(cmd, shell=True)
-
 
 
 

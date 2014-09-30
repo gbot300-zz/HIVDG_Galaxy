@@ -11,6 +11,7 @@ import subprocess
 import argparse
 import os
 import ast
+import cfg as cfg
 #import codecs
 
 # Define usage options using argparse library
@@ -115,7 +116,7 @@ with open('input_run.txt', 'a') as a:
 cmd = ' cat input_run.txt;   '
 
 ## required input
-cmd += ' /usr/bin/perl /opt/exp_soft/galaxy-tools/custom_tools/bin/vprofiler.pl -i input_run.txt -o Vpro '
+cmd += ' /usr/bin/perl %s/bin/vprofiler.pl -i input_run.txt -o Vpro ' % (cfg.customToolsDir, )
 
 ## optional input
 if dargs['nt']:

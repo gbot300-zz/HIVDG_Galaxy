@@ -9,6 +9,7 @@ Python wrapper for vphaser.pl file. The wrapper was required since the the Perl 
 import shutil
 import subprocess
 import argparse
+import cfg as cfg
 
 # Define usage options using argparse library
 parser = argparse.ArgumentParser(description = 'Wrapper for vphaser.pl, in preparation for nucleotide, \
@@ -29,7 +30,7 @@ print dargs
 
 # Perl file execution
 # I had to add this as Galaxy was keep the file as a '.dat' file, which made the vphaser script break
-cmd = ' /usr/bin/perl /opt/exp_soft/galaxy-tools/custom_tools/bin/vphaser.pl '
+cmd = ' /usr/bin/perl %s/bin/vphaser.pl ' % (cfg.customToolsDir, )
 
 ## required args
 ## this hack is required since the vphaser.pl tool wants a file named "something.qlx"

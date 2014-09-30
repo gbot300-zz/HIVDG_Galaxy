@@ -8,6 +8,7 @@ Python wrapper for vphaser.pl file. The wrapper was required since the the Perl 
 
 import shutil
 import subprocess
+import cfg as cfg
 import argparse
 parser = argparse.ArgumentParser(description = 'Detect super-Infectio events in reads from 2 different time points')
 
@@ -26,7 +27,7 @@ print dargs
 
 # Python file execution
 #cmd = ' /usr/bin/python /home/gbotha/galaxy-dist/tools/custom_tools/bin/super_infection_detection.py '
-cmd = ' /usr/bin/python /opt/exp_soft/galaxy-tools/custom_tools/bin/super_infection_detection.py '
+cmd = ' /usr/bin/python %s/bin/super_infection_detection.py ' % (cfg.customToolsDir, )
 
 ## required args
 ## this hack is required since the vphaser.pl tool wants a file named "something.qlx"

@@ -2,6 +2,7 @@
 #check for matching seqs in the g-drive folder using pairwise comparisons
 #to run example:: python contaminants.py contamtest.fas gag contaminantsOUT.txt
 import os, sys, re, commands
+import cfg as cfg
 
 ###function to read fasta files##################
 def fastarecords(file):         #file should be opened
@@ -147,7 +148,7 @@ if os.path.isdir(gdrive+genename):
 						seq2f.close()
 		#run emboss' stretcher on created tempfile
 						outfname = "stretchrr_"+str(oldtitles.index(title)+1)+"_"+str(titlelist.index(newt)+1)+".fas"
-						stretchr = "/opt/exp_soft/emboss-6.6/bin/stretcher -asequence "+seq1file+" -bsequence "+seq2file+" -outfile "+outfname
+						stretchr = cfg.toolsDir + "emboss-6.6/bin/stretcher -asequence "+seq1file+" -bsequence "+seq2file+" -outfile "+outfname
 #						os.system(stretchr)
 						outs = commands.getoutput(stretchr)
 		#open clustaw output file and get the seqs

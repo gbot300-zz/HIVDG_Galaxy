@@ -10,6 +10,7 @@ import os
 import subprocess
 import argparse
 import pipes
+import cfg as cfg
 
 # Define usage options using argparse library
 parser = argparse.ArgumentParser(description = 'Wrapper for rc454.pl, ensure that reads have been mapped \
@@ -48,7 +49,7 @@ print dargs
 
 ## Perl file execution
 
-cmd = ' /usr/bin/perl /opt/exp_soft/galaxy-tools/custom_tools/rc454/rc454.pl '
+cmd = ' /usr/bin/perl %s/rc454/rc454.pl ' % (cfg.customToolsDir,)
 
 ## required inputs
 cmd += ' %s %s %s %s ' % (dargs['qlx'], dargs['fa'], dargs['qual'], dargs['ref'])

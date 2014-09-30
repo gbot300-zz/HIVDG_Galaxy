@@ -10,6 +10,7 @@ The tool is set up in such a way that one can repetitively bin the sequences for
 import os
 import subprocess
 import argparse
+import cfg as cfg
 
 ## Define usage options using argparse library
 parser = argparse.ArgumentParser(description = 'Wrapper for bin_by_seqstring.py')
@@ -41,7 +42,7 @@ dargs =  vars(args)
 print dargs
 
 ## tool execution
-cmd = '/usr/bin/python /opt/exp_soft/galaxy-tools/custom_tools/galaxy_confs/bin_by_seqstring.py' 
+cmd = '/usr/bin/python %s/galaxy_confs/bin_by_seqstring.py' % (cfg.customToolsDir,) 
 
 ## required inputs
 if dargs['fa']:

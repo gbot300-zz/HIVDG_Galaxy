@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import argparse
 import glob
+import cfg as cfg
 
 # Define usage options using argparse library
 parser = argparse.ArgumentParser(description = 'Wrapper for vphaser2, in preparation for nucleotide, \
@@ -65,6 +66,6 @@ shutil.copy(covplot, 'covplot.R')
 
 subprocess.check_call( 'R CMD BATCH covplot.R', shell=True)
 
-cmd = '/usr/bin/perl /opt/exp_soft/galaxy-tools/custom_tools/bin/vph2vprf_format.pl -vph2 vphaserout.txt -ref %s -o vpro.txt' % (dargs['ref'])
+cmd = '/usr/bin/perl %s/bin/vph2vprf_format.pl -vph2 vphaserout.txt -ref %s -o vpro.txt' % (cfg.customToolsDir, dargs['ref'])
 subprocess.check_call( cmd , shell=True)
 
